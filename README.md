@@ -1,5 +1,6 @@
 AI-Powered Job Application Automation System
-This document outlines the architecture and functionality of an AI-driven job application system. The system automates the entire job application process, from initial data collection and resume optimization to job searching and application submission. It leverages AI agents and a database to streamline the process and improve the chances of securing interviews. The system incorporates visual representations for different tasks and an overall dashboard for comprehensive monitoring
+
+The system automates the entire job application process, from initial data collection and resume optimization to job searching and application submission. It leverages AI agents and a database to streamline the process and improve the chances of securing interviews. The system incorporates visual representations for different tasks and an overall dashboard for comprehensive monitoring
 .
 
 System Overview
