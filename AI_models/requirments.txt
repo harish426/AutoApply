@@ -1,0 +1,4 @@
+pip install azure.ai.textanalytics
+pip install azure.ai.formrecognizer
+pip install azure.core.credentials
+pip install pymongo-4.13.2
