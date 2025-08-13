@@ -42,11 +42,15 @@ const userProfileSchema = new mongoose.Schema(
 
     educations: [educationSchema],
 
-    certifications: [String], // e.g., array of file URLs or paths
+    certifications: [String],
 
     skills: [String],
 
-    resume: String, // file URL or path
+    resume: {
+      data: Buffer, // store file content
+      contentType: String, // store MIME type (e.g., application/pdf)
+      filename: String, // optional: store original filename
+    },
 
     workAuthorization: {
       authorizedToWorkInUS: Boolean,
