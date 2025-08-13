@@ -6,7 +6,7 @@ const REFRESH_TOKEN_SECRET =
 
 function generateAccessToken(user) {
   return jwt.sign({ id: user._id, email: user.email }, ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "    ",
   });
 }
 

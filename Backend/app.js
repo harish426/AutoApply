@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const db = require("./database/db");
 const { handleError } = require("./middleware");
 const api = require("./api");
+const upload = require("./upload");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,8 @@ app.use(function (req, res, next) {
 // Register login route
 app.post("/login", api.handleLogin);
 app.post("/profile/:email", api.handleSaveProfile);
+app.post("/upload/:email", upload.single("resume"), api.handleUploads);
+app.get("/download/:email", api.handleDownload);
 
 app.use(handleError);
 
