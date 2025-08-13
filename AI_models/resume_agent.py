@@ -79,9 +79,98 @@ class ResumeAIUpdater:
               print("Agent's raw response content:")
               print(message_content)
       return result
-        
 
-    def update_resume_with_ai(self, job_requirements_json, job_description_json, resume_json):
+    def get_resume_match_score_with_ai(self, job_requirements_json, job_description_json, resume_json, instruction):
+      """
+      Evaluates how well the resume matches the job requirements and description using an Azure AI agent.
+
+      Args:
+          job_requirements_json (str): JSON string of job requirements (list of strings).
+          job_description_json (str): JSON string of the job description (string).
+          resume_json (str): JSON string of the original resume data.
+          instruction (str): Instruction to the AI agent describing what output to return.
+
+      Returns:
+          dict: {
+              "match_percentage": float,
+              "matched_skills": list of strings
+          }
+          or None if an error occurs.
+      """
+      try:
+          job_requirements = json.loads(job_requirements_json)
+          job_description = json.loads(job_description_json)
+          resume = json.loads(resume_json)
+      except json.JSONDecodeError as e:
+          print(f"Error decoding input JSON: {e}")
+          return None
+
+      input_data = {
+          "job_requirements": job_requirements,
+          "job_description": job_description,
+          "resume": resume
+      }
+
+      json_input_content = json.dumps(input_data, indent=2)
+
+      # Create a new agent thread
+      thread = self.project_client.agents.create_thread()
+
+      # Send message with the given instruction and data
+      message = self.project_client.agents.create_message(
+          thread_id=thread.id,
+          role="user",
+          content=(
+              instruction +
+              f"{json_input_content}"
+          )
+      )
+
+      print("Sending message to agent and processing run...")
+      run = self.project_client.agents.create_and_process_run(
+          thread_id=thread.id,
+          agent_id=self.agent.id
+      )
+      print("Run completed. Retrieving messages...")
+
+      # Retrieve messages from the agent
+      messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
+      
+      match_result = None
+      if not messages_list_response.data:
+          print("No messages found in the thread after run completion.")
+      else:
+          for message_obj in messages_list_response.data:
+              message_role = getattr(message_obj, 'role', 'unknown_role_from_message_obj')
+              message_content = ""
+              if hasattr(message_obj, 'content') and message_obj.content:
+                  for content_part in message_obj.content:
+                      if getattr(content_part, 'type', None) == 'text':
+                          text_value_dict = getattr(content_part, 'text', {})
+                          message_content = getattr(text_value_dict, 'value', '')
+                          break
+              if message_role == 'assistant':
+                  try:
+                      parsed_response = json.loads(message_content)
+                      match_result = {
+                          "match_percentage": parsed_response.get('match_percentage', 0.0),
+                          "matched_skills": parsed_response.get('matched_skills', [])
+                      }
+                  except json.JSONDecodeError as e:
+                      print(f"\nError decoding JSON from agent's response: {e}")
+                      print("Agent's raw response content:")
+                      print(message_content)
+                  except Exception as e:
+                      print(f"\nAn unexpected error occurred while processing assistant message: {e}")
+                      print("Agent's raw response content:")
+                      print(message_content)
+
+      return match_result
+
+
+
+
+    def update_resume_with_ai(self, job_requirements_json, job_description_json, resume_json, instruction):
         """
         Updates the resume JSON by incorporating relevant keywords from job requirements and description
         using an Azure AI agent.
@@ -115,11 +204,7 @@ class ResumeAIUpdater:
             thread_id=thread.id,
             role="user",
             content=(
-                "Given the following job requirements, job description, and my resume in JSON format, "
-                "please update the 'resume' section by incorporating relevant keywords from the "
-                "'job_description' and 'job_requirements' into the 'summary', 'projects description' and 'skills' sections. "
-                "Ensure the updated resume is returned ONLY as a valid JSON object. "
-                "Do not include any additional text or formatting outside the JSON.\n\n"
+                instruction +
                 f"{json_input_content}"
             )
         )
@@ -268,7 +353,7 @@ if __name__ == "__main__":
     # Define your job requirements, job description, and resume as JSON strings
     job_requirements_str = json.dumps([
         "Strong Python skills",
-        "Experience with cloud platforms (Azure preferred)",
+        "Experience with cloud platforms (Azure preferred), and ETL design",
         "Knowledge of machine learning concepts",
         "Excellent communication skills",
         "Familiarity with data analysis tools"
@@ -284,22 +369,24 @@ if __name__ == "__main__":
 
     # Use the existing json_data for the resume
     original_resume_str = json_data
-
+    instruction = "Given the following job requirements, job description, and my resume in JSON format,please update the 'resume' section by incorporating relevant keywords from the 'job_description' and 'job_requirements' into the 'summary', 'projects description' and 'skills' sections. Ensure the updated resume is returned ONLY as a valid JSON object. Do not include any additional text or formatting outside the JSON.\n\n"
+    # instruction = "Match the job requirments and description with key words. return percentage of match that profile and job, and also return skills required for the job which are not present in resume i.e keywords. Just return percentage and skills in JSON format. Do not include any additional text or formatting outside the JSON.\n\n"
     updated_resume_data = resume_updater.update_resume_with_ai(
         job_requirements_str,
         job_description_str,
-        original_resume_str
+        original_resume_str,
+        instruction
     )
 
-    if updated_resume_data:
-        print("\n--- Final Updated Resume Data ---")
-        print(json.dumps(updated_resume_data, indent=2))
-        # You can now use updated_resume_data to generate a new PDF if needed
-        resume_builder = ResumeBuilder(json.dumps(updated_resume_data), "updated_resume.pdf")
-        resume_builder.create_resume_pdf()
-        rsbuilder=ResumeBuilder(json.dumps(updated_resume_data), "updated_resume.pdf")
-        rsbuilder.create_resume_pdf()
-    else:
-        print("Failed to get an updated resume.")
+    # if updated_resume_data:
+    #     print("\n--- Final Updated Resume Data ---")
+    #     print(json.dumps(updated_resume_data, indent=2))
+    #     # You can now use updated_resume_data to generate a new PDF if needed
+    #     resume_builder = ResumeBuilder(json.dumps(updated_resume_data), "updated_resume.pdf")
+    #     resume_builder.create_resume_pdf()
+    #     rsbuilder=ResumeBuilder(json.dumps(updated_resume_data), "updated_resume.pdf")
+    #     rsbuilder.create_resume_pdf()
+    # else:
+    #     print("Failed to get an updated resume.")
 
     

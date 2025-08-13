@@ -1,29 +1,21 @@
-from pymongo import MongoClient
+import requests
+import os
 
-def get_document_from_mongodb(uri, db_name, collection_name, query):
+def download_document_from_api(api_url, save_filename):
     """
-    Connects to MongoDB and retrieves a document based on the provided query.
-
-    Args:
-        uri (str): MongoDB connection URI.
-        db_name (str): Name of the database.
-        collection_name (str): Name of the collection.
-        query (dict): Query to filter documents.
-
-    Returns:
-        dict or None: The first matching document, or None if not found.
+    Downloads a document from a Node.js API endpoint and saves it locally.
     """
-    client = MongoClient(uri)
-    db = client[db_name]
-    collection = db[collection_name]
-    document = collection.find_one(query)
-    client.close()
-    return document
+    response = requests.get(api_url, stream=True)
 
-# Example usage:
-# uri = "mongodb://localhost:27017/"
-# db_name = "testdb"
-# collection_name = "testcollection"
-# query = {"name": "John"}
-# doc = get_document_from_mongodb(uri, db_name, collection_name, query)
-# print(doc)
+    if response.status_code == 200:
+        file_path = os.path.join(os.getcwd(), save_filename)
+        with open(file_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print(f"✅ File saved to: {file_path}")
+    else:
+        print(f"❌ Error: {response.status_code} - {response.text}")
+
+# Example usage
+api_url = "http://localhost:3000/download/test1@gamil.com"
+download_document_from_api(api_url, "Resume.pdf")
