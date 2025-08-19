@@ -217,7 +217,7 @@ class ResumeAIUpdater:
         print("Run completed. Retrieving messages...")
 
         messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
- 
+      
         updated_resume = None
         if not messages_list_response.data:
             print("No messages found in the thread after run completion.")
@@ -231,7 +231,6 @@ class ResumeAIUpdater:
                             text_value_dict = getattr(content_part, 'text', {})
                             message_content = getattr(text_value_dict, 'value', '')
                             break
-
                 if message_role == 'assistant':
                     try:
                         parsed_response = json.loads(message_content)
