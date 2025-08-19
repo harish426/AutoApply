@@ -1,5 +1,5 @@
-// const User = require("./models/User");
-// const UserProfile = require("./models/userprofile");
+//const User = require("./models/User");
+//const UserProfile = require("./models/userprofile");
 
 // async function handleUploadDocument(req, res) {
 //   try {
@@ -36,37 +36,37 @@ const UserProfile = require("./models/userprofile");
 /**
  * Upload Resume to DB
  */
-async function handleUploadDocument(req, res) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+// async function handleUploadDocument(req, res) {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded" });
+//     }
 
-    const email = req.params.email;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
+//     const email = req.params.email;
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ error: "User not found" });
 
-    let profile = await UserProfile.findOne({ user: user._id });
-    if (!profile) {
-      profile = new UserProfile({ user: user._id });
-    }
+//     let profile = await UserProfile.findOne({ user: user._id });
+//     if (!profile) {
+//       profile = new UserProfile({ user: user._id });
+//     }
 
-    profile.resume = {
-      data: req.file.buffer, // Use buffer directly
-      contentType: req.file.mimetype,
-      filename: req.file.originalname,
-    };
+//     profile.resume = {
+//       data: req.file.buffer, // Use buffer directly
+//       contentType: req.file.mimetype,
+//       filename: req.file.originalname,
+//     };
 
-    await profile.save();
+//     await profile.save();
 
-    res
-      .status(200)
-      .json({ message: "Document uploaded to database successfully" });
-  } catch (err) {
-    console.error("Upload error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-}
+//     res
+//       .status(200)
+//       .json({ message: "Document uploaded to database successfully" });
+//   } catch (err) {
+//     console.error("Upload error:", err);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// }
 
 async function handleDownloadDocument(req, res) {
   try {
@@ -92,6 +92,6 @@ async function handleDownloadDocument(req, res) {
 }
 
 module.exports = {
-  handleUploadDocument,
+  //handleUploadDocument,
   handleDownloadDocument,
 };
