@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const db = require("./database/db");
 const { handleError } = require("./middleware");
 const api = require("./api");
+const upload = require("./upload");
+const authenticateToken = require("./authmiddleware");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,9 +24,23 @@ app.use(function (req, res, next) {
   next();
 });
 
-// Register login route
+// Public route
 app.post("/login", api.handleLogin);
-app.post("/profile/:email", api.handleSaveProfile);
+
+// Protected routes
+app.post(
+  "/profile/:email",
+  authenticateToken,
+  upload.single("resume"),
+  api.handleSaveProfile
+);
+// app.post(
+//   "/upload/:email",
+//   authenticateToken,
+//   upload.single("resume"),
+//   api.handleUploads
+// );
+app.get("/download/:email", authenticateToken, api.handleDownload);
 
 app.use(handleError);
 
