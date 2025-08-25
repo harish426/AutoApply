@@ -1,12 +1,19 @@
 from django.shortcuts import render
-
+import json
+import io
+from django.http import JsonResponse, HttpResponse
 # Create your views here.
 # myapp/views.py
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+from AI_models.resume_agent import ResumeAIUpdater
+from AI_models.resume_pdf import ResumeBuilder  # Assuming this is the function to create PDF resumes
+from AI_models.resume_understander import ResumeUnderstander
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from AI_models.resume_agent import ResumeAIUpdater
+
 
 @api_view(['POST']) 
 def UpdateResume(request):
@@ -15,12 +22,16 @@ def UpdateResume(request):
     """
     if request.method == 'POST':
         # Safely get the data variables from the request body
+        user_name = request.data.get('user_name')
         company_name = request.data.get('company_name')
+        job_title = request.data.get('job_title')
         job_description = request.data.get('job_description')
         job_requirements = request.data.get('job_requirements')
 
+
+
         # Check if the required data is present
-        if not all([company_name, job_description, job_requirements]):
+        if not all([company_name, job_title, job_description, job_requirements]):
             return Response(
                 {"error": "Missing one or more required fields: company_name, job_description, or job_requirements."},
                 status=status.HTTP_400_BAD_REQUEST
@@ -30,26 +41,44 @@ def UpdateResume(request):
         print(f"Received data for company: {company_name}")
         print(f"Job Description: {job_description}")
         print(f"Job Requirements: {job_requirements}")
+        print(f"Job Title: {job_title}")
 
-        # You can now process this data. For now, we'll just return a confirmation.
-        response_message = {
-            "status": "success",
-            "message": "Data received and processed successfully.",
-            "data_received": {
-                "company_name": company_name,
-                "job_description": job_description,
-                "job_requirements": job_requirements
-            }
-        }
-    
-        # Return the processed data as a JSON response
-        return Response(response_message, status=status.HTTP_200_OK)
+        try:
+            response_message="return updated resume"
+            company_name_json=json.dumps(company_name)
+            job_title_json=json.dumps(job_title)
+            job_description_json=json.dumps(job_description)
+            job_requirements_json=json.dumps(job_requirements)
+
+            agent=ResumeAIUpdater()
+            Updated_resume_json=agent.update_resume(company_name_json, job_title_json, job_description_json, job_requirements_json)
+            buffer = io.BytesIO()
+            if Updated_resume_json:
+                print("resume updated successfully")
+                pdf_builder=ResumeBuilder(Updated_resume_json)
+                resume_pdf_buffer=pdf_builder.create_resume_pdf(user_name, job_title)
+                if resume_pdf_buffer:
+                    print(f"PDF '{user_name}_{job_title}.pdf' generated successfully.")
+                    response = HttpResponse(resume_pdf_buffer, content_type="application/pdf")
+                    response['Content-Disposition'] = f'attachment; filename="{user_name}_{job_title}.pdf"'
+                    return response
+                else:
+                    print("failed to create resume")
+                    return Response({"error": "Failed to create resume PDF."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                print("failed to update resume")
+                return Response({"error": "Failed to update resume."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Exception occurred: {str(e)}")
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # This handles requests that are not POST
     return Response(
         {"error": "This endpoint only accepts POST requests."},
         status=status.HTTP_405_METHOD_NOT_ALLOWED
     )
+
+
 
 @api_view(['POST'])
 def job_match_data(request):
@@ -58,34 +87,22 @@ def job_match_data(request):
 
 @api_view(['POST'])
 def document_uploaded(request):
-    """
-    A view that receives a document for analysis.
-    """
-    if request.method == 'POST':
-        # Safely get the document from the request body
-        document = request.data.get("status")
+    if request.method == "POST" and request.FILES.get("resume"):
+        uploaded_file = request.FILES["resume"]
 
-        # Check if the document is present
-        if not status:
-            return Response(
-                {"error": "Missing required field: status."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Save into buffer (not disk)
+        buffer = io.BytesIO(uploaded_file.read())
 
-        # Log the received document for debugging purposes
-        print(f"Received document for analysis.")
+        # Optionally: process buffer (e.g. extract text, forward to AI, etc.)
+        # Example: save it temporarily if needed
+        # with open("resume.pdf", "wb") as f:
+        #     f.write(buffer.getvalue())
+        # read_resume = ResumeUnderstander()
+        # read_resume.understand_resume(buffer)
+        if buffer:
+            # read_resume = ResumeUnderstander()
+            # read_resume.understand_resume(buffer)
+            print("file received successfully")
 
-        # You can now process this document. For now, we'll just return a confirmation.
-        response_message = {
-            "status": "success",
-            "message": "Document received and processed successfully."
-        }
-
-        # Return the processed data as a JSON response
-        return Response(response_message, status=status.HTTP_200_OK)
-
-    # This handles requests that are not POST
-    return Response(
-        {"error": "This endpoint only accepts POST requests."},
-        status=status.HTTP_405_METHOD_NOT_ALLOWED
-    )
+        return JsonResponse({"message": "Resume received successfully!"})
+    return JsonResponse({"error": "No file uploaded"}, status=400)

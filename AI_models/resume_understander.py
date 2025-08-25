@@ -65,53 +65,77 @@ dotenv.load_dotenv()
 # ...existing code...
 
 # To learn the detailed concept of "polygon" in the following content, visit: https://aka.ms/V3.1-bounding-region
-def format_bounding_region(bounding_regions):
-    if not bounding_regions:
-        return "N/A"
-    return ", ".join(
-        f"Page #{region.page_number}: {format_polygon(region.polygon)}"
-        for region in bounding_regions
-    )
+class ResumeUnderstander:
+    def __init__(self):
+        self.endpoint = os.environ.get("Understander_Endpoint")
+        self.key = os.environ.get("Understander_Key")
+        if not self.endpoint or not self.key:
+            raise ValueError("Azure endpoint or key is missing. Please set the 'Understander_Endpoint' and 'Understander_Key' environment variables.")
 
+    def understand_resume(self, pdf_in_buffer):
+        from azure.core.credentials import AzureKeyCredential
+        from azure.ai.formrecognizer import DocumentAnalysisClient, AnalysisFeature
 
-def format_polygon(polygon):
-    if not polygon:
-        return "N/A"
-    return ", ".join([f"[{p.x}, {p.y}]" for p in polygon])
-
-
-def analyze_read():
-    from azure.core.credentials import AzureKeyCredential
-    from azure.ai.formrecognizer import DocumentAnalysisClient, AnalysisFeature
-
-    # For how to obtain the endpoint and key, please see PREREQUISITES above.
-    endpoint = os.environ.get("Understander_Endpoint")
-    key = os.environ.get("Understander_Key")
-    if not endpoint or not key:
-        raise ValueError("Azure endpoint or key is missing. Please set the 'Understander_Endpoint' and 'Understander_Key' environment variables.")
-
-    document_analysis_client = DocumentAnalysisClient(
-        endpoint=endpoint, credential=AzureKeyCredential(key)
-    )
-
-    # Analyze a document at a URL:
-    url = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/rest-api/read.png"
-    # Replace with your actual url:
-    # If you use the URL of a public website, to find more URLs, please visit: https://aka.ms/V3.1-more-URLs 
-    # If you analyze a document in Blob Storage, you need to generate Public SAS URL, please visit: https://aka.ms/create-sas-tokens
-    # poller = document_analysis_client.begin_analyze_document_from_url(
-    #     "prebuilt-read", document_url=url, features=[AnalysisFeature.LANGUAGES]
-    # )
-
-    # If analyzing a local document, remove the comment markers (#) at the beginning of these 8 lines.
-    # Delete or comment out the part of "Analyze a document at a URL" above.
-    # Replace <path to your sample file>  with your actual file path.
-    path_to_sample_document = "D:\\Downloads\\Harish Resume.pdf"
-    with open(path_to_sample_document, "rb") as f:
-        poller = document_analysis_client.begin_analyze_document(
-            "prebuilt-read", document=f, features=[AnalysisFeature.LANGUAGES]
+        document_analysis_client = DocumentAnalysisClient(
+            endpoint=self.endpoint, credential=AzureKeyCredential(self.key)
         )
-    result = poller.result()
+
+        poller = document_analysis_client.begin_analyze_document("prebuilt-read", document=pdf_in_buffer, features=[AnalysisFeature.LANGUAGES])
+        result = poller.result()
+
+        # Analyze paragraphs.
+        if len(result.paragraphs) > 0:
+            print(f"----Detected #{len(result.paragraphs)} paragraphs in the document----")
+            total_text = ""
+            for paragraph in result.paragraphs:
+                total_text += paragraph.content + "\n"
+        print("----------------------------------------")
+        return total_text
+    def format_bounding_region(self,bounding_regions):
+        if not bounding_regions:
+            return "N/A"
+        return ", ".join(
+            f"Page #{region.page_number}: {self.format_polygon(region.polygon)}"
+            for region in bounding_regions
+        )
+
+
+    def format_polygon(self, polygon):
+        if not polygon:
+            return "N/A"
+        return ", ".join([f"[{p.x}, {p.y}]" for p in polygon])
+
+
+    def analyze_read(self, pdf_in_buffer):
+        from azure.core.credentials import AzureKeyCredential
+        from azure.ai.formrecognizer import DocumentAnalysisClient, AnalysisFeature
+
+        # For how to obtain the endpoint and key, please see PREREQUISITES above.
+        endpoint = os.environ.get("Understander_Endpoint")
+        key = os.environ.get("Understander_Key")
+        if not endpoint or not key:
+            raise ValueError("Azure endpoint or key is missing. Please set the 'Understander_Endpoint' and 'Understander_Key' environment variables.")
+
+        document_analysis_client = DocumentAnalysisClient(
+            endpoint=endpoint, credential=AzureKeyCredential(key)
+        )
+
+        # Replace with your actual url:
+        # If you use the URL of a public website, to find more URLs, please visit: https://aka.ms/V3.1-more-URLs 
+        # If you analyze a document in Blob Storage, you need to generate Public SAS URL, please visit: https://aka.ms/create-sas-tokens
+        # poller = document_analysis_client.begin_analyze_document_from_url(
+        #     "prebuilt-read", document_url=url, features=[AnalysisFeature.LANGUAGES]
+        # )
+
+        # If analyzing a local document, remove the comment markers (#) at the beginning of these 8 lines.
+        # Delete or comment out the part of "Analyze a document at a URL" above.
+        # Replace <path to your sample file>  with your actual file path.
+        path_to_sample_document = "D:\\Downloads\\Harish Resume.pdf"
+        with open(path_to_sample_document, "rb") as f:
+            poller = document_analysis_client.begin_analyze_document(
+                "prebuilt-read", document=f, features=[AnalysisFeature.LANGUAGES]
+            )
+        result = poller.result()
 
 
 
@@ -146,14 +170,14 @@ def analyze_read():
     #             )
 ##############################################################################################################################################################
 
-    # Analyze paragraphs.
-    if len(result.paragraphs) > 0:
-        print(f"----Detected #{len(result.paragraphs)} paragraphs in the document----")
-        total_text = ""
-        for paragraph in result.paragraphs:
-            total_text += paragraph.content + "\n"
-    print("----------------------------------------")
-    return total_text
+        # Analyze paragraphs.
+        if len(result.paragraphs) > 0:
+            print(f"----Detected #{len(result.paragraphs)} paragraphs in the document----")
+            total_text = ""
+            for paragraph in result.paragraphs:
+                total_text += paragraph.content + "\n"
+        print("----------------------------------------")
+        return total_text
     # [END analyze_read]
 if __name__ == "__main__":
     import sys
@@ -163,7 +187,8 @@ if __name__ == "__main__":
     resumeparser= ResumeAIParser()
 
     try:
-        text=analyze_read()
+        agent=ResumeUnderstander()
+        text=agent.analyze_read()
         updated_resume_data=resumeparser.parse_resume_with_ai(text)
         updated_resume_data=json.loads(updated_resume_data)
         if updated_resume_data:
