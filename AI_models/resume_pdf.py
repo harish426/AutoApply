@@ -1,6 +1,7 @@
 """resume_pdf.py is a module that generates a PDF resume from JSON data. generated from resume_agent.py."""
 
 import json
+import io
 from annotated_types import doc
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -13,7 +14,7 @@ from reportlab.graphics.shapes import Line
 
 
 class ResumeBuilder:
-    def __init__(self, json_data_str, output_filename="resume.pdf"):
+    def __init__(self, json_data_str):
         """
         Initializes the ResumeBuilder with JSON data and output filename.
 
@@ -22,10 +23,10 @@ class ResumeBuilder:
             output_filename (str): The name of the output PDF file.
         """
         self.json_data_str = json_data_str
-        self.output_filename = output_filename
+        
 
 
-    def create_resume_pdf(self):
+    def create_resume_pdf(self,user_name,title):
         """
         Generates a PDF resume from JSON data, formatted to resemble the provided sample.
 
@@ -36,7 +37,7 @@ class ResumeBuilder:
         # Parse the JSON data
         data = json.loads(self.json_data_str)
 
-        doc = SimpleDocTemplate(self.output_filename, pagesize=letter,
+        doc = SimpleDocTemplate(f"{user_name}_{title}.pdf", pagesize=letter,
                                 rightMargin=0.4*inch, leftMargin=0.4*inch,
                                 topMargin=0.4*inch, bottomMargin=0.4*inch)
         styles = getSampleStyleSheet()
@@ -214,13 +215,17 @@ class ResumeBuilder:
         #     story.append(Paragraph(f"{cert},", styles['BulletPoint']))
         # story.append(Spacer(1, 0.1 * inch))
 
-
         # Build the PDF
+        buffer=io.BytesIO()
         try:
             doc.build(story)
-            print(f"Resume PDF '{self.output_filename}' created successfully!")
+            print(f"Resume PDF '{user_name}_{title}.pdf' created successfully!")
+            buffer.seek(0)  # rewind
+            return buffer
+            
         except Exception as e:
             print(f"Error building PDF: {e}")
+            return None
 
 # Your provided JSON data
 json_data = """
@@ -319,4 +324,8 @@ json_data = """
 
 if __name__ == "__main__":
     resume_builder = ResumeBuilder(json_data)
-    resume_builder.create_resume_pdf()  # Default output filename is 'resume.pdf'
+    doc=resume_builder.create_resume_pdf(user_name="JohnDoe", title="Data Scientist")
+    if doc:
+        print("PDF generated and ready for download.")
+    else:
+        print("failed to create resume")
