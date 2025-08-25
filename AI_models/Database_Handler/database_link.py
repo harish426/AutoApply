@@ -1,29 +1,40 @@
-from pymongo import MongoClient
+import requests
+import os
+class database:
+    def __init__(self,user, endpoint):
+        self.user_name=user
+        self.endpoint=endpoint
+    def download_document_from_api(self, save_filename):
+        """
+        Downloads a document from a Node.js API endpoint and saves it locally.
+        """
+        response = requests.get(self.endpoint, stream=True)
 
-def get_document_from_mongodb(uri, db_name, collection_name, query):
-    """
-    Connects to MongoDB and retrieves a document based on the provided query.
+        if response.status_code == 200:
+            file_path = os.path.join(os.getcwd(), save_filename)
+            with open(file_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"✅ File saved to: {file_path}")
+        else:
+            print(f"❌ Error: {response.status_code} - {response.text}")
 
-    Args:
-        uri (str): MongoDB connection URI.
-        db_name (str): Name of the database.
-        collection_name (str): Name of the collection.
-        query (dict): Query to filter documents.
 
-    Returns:
-        dict or None: The first matching document, or None if not found.
-    """
-    client = MongoClient(uri)
-    db = client[db_name]
-    collection = db[collection_name]
-    document = collection.find_one(query)
-    client.close()
-    return document
 
-# Example usage:
-# uri = "mongodb://localhost:27017/"
-# db_name = "testdb"
-# collection_name = "testcollection"
-# query = {"name": "John"}
-# doc = get_document_from_mongodb(uri, db_name, collection_name, query)
-# print(doc)
+    def get_user_resume_json(self,endpoint):
+        """
+        Fetches user resume data in JSON format from a Node.js API endpoint.
+        """
+        response = requests.get(endpoint)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"❌ Error: {response.status_code} - {response.text}")
+            return None
+    
+
+
+# Example usage
+db = database("username", "http://localhost:3000/api/download")
+db.download_document_from_api("Resume.pdf")
