@@ -1,5 +1,6 @@
 import requests
 import os
+import json
 class database:
     def __init__(self,user, endpoint):
         self.user_name=user
@@ -34,7 +35,20 @@ class database:
             return None
     
 
+    def json_resume(self,user_name):
+        """
+        Fetches user resume data in JSON format from a Node.js API endpoint.
+        """
+        response = requests.get("endpoint")
 
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"❌ Error: {response.status_code} - {response.text}")
+            return None
+
+   
+   
 # Example usage
 db = database("username", "http://localhost:3000/api/download")
 db.download_document_from_api("Resume.pdf")
