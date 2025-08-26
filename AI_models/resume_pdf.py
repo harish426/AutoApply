@@ -36,8 +36,8 @@ class ResumeBuilder:
         """
         # Parse the JSON data
         data = json.loads(self.json_data_str)
-
-        doc = SimpleDocTemplate(f"{user_name}_{title}.pdf", pagesize=letter,
+        buffer=io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter,
                                 rightMargin=0.4*inch, leftMargin=0.4*inch,
                                 topMargin=0.4*inch, bottomMargin=0.4*inch)
         styles = getSampleStyleSheet()
@@ -49,7 +49,7 @@ class ResumeBuilder:
                                 fontName='Helvetica-Bold',
                                 fontSize=24,
                                 leading=28,
-                                alignment=0, # Align left side
+                                alignment=1, # Align left side
                                 spaceAfter=0))
 
         # Title style
@@ -57,7 +57,7 @@ class ResumeBuilder:
                                 fontName='Helvetica',
                                 fontSize=14,
                                 leading=16,
-                                alignment=0, # Align left side
+                                alignment=1, # Align left side
                                 spaceAfter=0.0 * inch))
 
         # Section Heading Style (e.g., SUMMARY, EDUCATION)
@@ -97,7 +97,7 @@ class ResumeBuilder:
                                 fontName='Helvetica',
                                 fontSize=9,
                                 textColor=colors.blue,
-                                alignment=2, # Left alignment
+                                alignment=1, # Left alignment
                                 spaceAfter=0))
         styles.add(ParagraphStyle(name='rightAlign',
                                 fontName='Helvetica-Bold',
@@ -108,10 +108,9 @@ class ResumeBuilder:
                                 spaceAfter=0))
         # --- Header Section: Name, Title, Contact Info ---
         header_data = [
-            [Paragraph(data['name'], styles['NameStyle']), Paragraph(f"Email: {data['contact']['email']}", styles['rightAlign'])],
-            [Paragraph(data['title'], styles['TitleStyle']), Paragraph(f"Phone: {data['contact']['phone']}", styles['rightAlign'])],
-            [Spacer(1, 0.0 * inch), Paragraph(f"<link href='{data['contact']['linkedin']}'>LinkedIn</link>", styles['LinkStyle'])],
-            [Spacer(1, 0.0 * inch), Paragraph(f"<link href='{data['contact']['github']}'>GitHub</link>", styles['LinkStyle'])]
+            [Paragraph(data['name'], styles['NameStyle'])],
+            [Paragraph(data['title'], styles['TitleStyle'])],
+            [Paragraph(f"Email: {data['contact']['email']}", styles['rightAlign']), Paragraph(f"Phone: {data['contact']['phone']}", styles['rightAlign']), Paragraph(f"<link href='{data['contact']['linkedin']}'>LinkedIn</link>", styles['LinkStyle']), Paragraph(f"<link href='{data['contact']['github']}'>GitHub</link>", styles['LinkStyle'])]
         ]
 
         # Define column widths for the header table
@@ -216,7 +215,6 @@ class ResumeBuilder:
         # story.append(Spacer(1, 0.1 * inch))
 
         # Build the PDF
-        buffer=io.BytesIO()
         try:
             doc.build(story)
             print(f"Resume PDF '{user_name}_{title}.pdf' created successfully!")

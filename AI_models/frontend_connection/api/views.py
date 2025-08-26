@@ -18,7 +18,7 @@ from rest_framework import status
 @api_view(['POST']) 
 def UpdateResume(request):
     """
-    A view that receives company name, job description, and job requirements.
+    A view that receives user name, company name, job description, and job requirements.
     """
     if request.method == 'POST':
         # Safely get the data variables from the request body
@@ -51,7 +51,100 @@ def UpdateResume(request):
             job_requirements_json=json.dumps(job_requirements)
 
             agent=ResumeAIUpdater()
-            Updated_resume_json=agent.update_resume(company_name_json, job_title_json, job_description_json, job_requirements_json)
+            json_data = """
+            {
+                "name": "Chaitanya Kaul",
+                "title": "Associate Analyst - Network Operations",
+                "contact": {
+                "email": "xyz@yahoo.com",
+                "phone": "99999999",
+                "linkedin": "https://www.linkedin.com/in/chaitanya-kaul/",
+                "github": "https://github.com/Chaitanyakaul97"
+                },
+                "summary": "Working as an Associate Analyst with over 6 months of experience in analyzing data with SQL, Python, Tableau/Spotfire and Excel. Proficient knowledge in Statistics, Mathematics and other Analytics tools and technologies.",
+                "education": [
+                {
+                    "degree": "MTech in Data Science",
+                    "institution": "Amity School of Engineering and Technology (ASET), Amity University, Gurugram",
+                    "duration": "July 2019 - May 2021",
+                    "gpa": "9.26/10"
+                },
+                {
+                    "degree": "B.E. in Information Technology",
+                    "institution": "University Institute of Engineering and Technology (UIET), Panjab University, Chandigarh",
+                    "duration": "July 2015 - May 2019",
+                    "gpa": "6.91/10"
+                }
+                ],
+                "skills": {
+                "programming": ["Python", "R", "SQL", "MySQL", "Hive", "TensorFlow"],
+                "bi_tools": ["Tableau", "Power BI", "MS-Excel"],
+                "relevant_courses": [
+                    "Machine Learning",
+                    "Natural Language Processing",
+                    "Probability and Statistics",
+                    "Data Analytics and Data Mining",
+                    "Data Structures",
+                    "Database Management System",
+                    "Big Data Technologies"
+                ]
+                },
+                "experience": [
+                {
+                    "company": "United Airlines Business Services Pvt. Ltd.",
+                    "location": "Gurugram, HR",
+                    "title": "Associate Analyst",
+                    "duration": "Apr 2021 - Present",
+                    "responsibilities": [
+                    "Worked on project 'Miss Connect Rates' to reduce missed connections by 2%.",
+                    "Executed SQL queries using Teradata and Microsoft SQL Server.",
+                    "Analyzed data and created reports using MS-Excel.",
+                    "Created visualizations using Tableau/Spotfire.",
+                    "Automated reports using Python scripting."
+                    ]
+                },
+                {
+                    "company": "Exposys Data Labs",
+                    "location": "Bengaluru, KR",
+                    "title": "Data Science Intern",
+                    "duration": "Sep 2020 - Oct 2020",
+                    "responsibilities": [
+                    "Worked on 'Customer Segmentation' project.",
+                    "Analyzed gender, age, income, and spending scores.",
+                    "Used K-means, Hierarchical, and DBSCAN clustering techniques."
+                    ]
+                }
+                ],
+                "projects": [
+                {
+                    "title": "Air Quality Index Prediction",
+                    "description": "Regression problem; web scraping, EDA, feature engineering and selection, model comparison. Random Forest Regressor achieved RMSE of 38.85. Deployed with Flask and Heroku."
+                },
+                {
+                    "title": "Cotton Plant Disease Prediction",
+                    "description": "Deep Learning classification using VGG19. Achieved 94.6% accuracy. Web app developed with Flask."
+                },
+                {
+                    "title": "Apple Stock Price Prediction and Forecasting",
+                    "description": "Used Tingo API and stacked LSTM RNN to forecast 30-day stock prices based on 100-day history. RMSE: 239.6."
+                },
+                {
+                    "title": "Fraud Transaction Classification",
+                    "description": "Classification of fraudulent transactions. Used feature engineering, data balancing, and model comparison. Random Forest achieved 94% accuracy."
+                }
+                ],
+                "certifications": [
+                "Data Analysis with Python (IBM, Coursera)",
+                "SQL for Data Science (IBM, Coursera)",
+                "Neural Networks & Deep Learning (deeplearning.ai, Coursera)",
+                "Python for Data Science (IBM, Coursera)",
+                "Fundamentals of Visualization with Tableau (UCDAVIS, Coursera)",
+                "Microsoft Excel from Beginner to Advanced (Udemy)",
+                "Machine Learning A-Z (Udemy)"
+                ]
+            }
+            """
+            Updated_resume_json=agent.update_resume_with_ai( json_data, job_description_json, job_requirements_json)
             buffer = io.BytesIO()
             if Updated_resume_json:
                 print("resume updated successfully")
@@ -81,12 +174,20 @@ def UpdateResume(request):
 
 
 @api_view(['POST'])
-def job_match_data(request):
+def chat_bot(request):
     if request.method == 'POST':
-        pass
+        company_name = request.data.get('company_name')
+        job_title = request.data.get('job_title')
+        job_description = request.data.get('job_description')
+        job_requirements = request.data.get('job_requirements')
+        question = request.data.get('question')
 
+ 
 @api_view(['POST'])
 def document_uploaded(request):
+    """
+    A view that handles file uploads (e.g., resumes).
+    """
     if request.method == "POST" and request.FILES.get("resume"):
         uploaded_file = request.FILES["resume"]
 
@@ -106,3 +207,5 @@ def document_uploaded(request):
 
         return JsonResponse({"message": "Resume received successfully!"})
     return JsonResponse({"error": "No file uploaded"}, status=400)
+
+

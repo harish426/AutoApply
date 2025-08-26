@@ -4,8 +4,8 @@ which is key in updating and send the json resume to the agent for updating. and
 import json
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-
 import os
+
 import dotenv
 dotenv.load_dotenv()
 
@@ -97,6 +97,9 @@ class ResumeAIUpdater:
           }
           or None if an error occurs.
       """
+      db = database("username", "http://localhost:3000/api/download")
+      job_requirements_json,job_description_json=db.application_information()
+      resume_json=db.get_user_resume_json("http://localhost:3000/api/resume")
       try:
           job_requirements = json.loads(job_requirements_json)
           job_description = json.loads(job_description_json)
@@ -170,7 +173,7 @@ class ResumeAIUpdater:
 
 
 
-    def update_resume_with_ai(self, job_requirements_json, job_description_json, resume_json, instruction):
+    def update_resume_with_ai(self, job_requirements_json, job_description_json, resume_json, instruction= "Given the following job requirements, job description, and my resume in JSON format,please update the 'resume' section by incorporating relevant keywords from the 'job_description' and 'job_requirements' into the 'summary', 'projects description' and 'skills' sections. Ensure the updated resume is returned ONLY as a valid JSON object. Do not include any explanations, Markdown formatting, or code fences. The response must start with { and end with }\n\n"):
       """
       Updates the resume JSON by incorporating relevant keywords from job requirements and description
       using an Azure AI agent.
@@ -227,7 +230,7 @@ class ResumeAIUpdater:
                       message_content = getattr(text_value_dict, "value", "")
 
                       try:
-                          updated_resume = json.loads(message_content)
+                          updated_resume = message_content
                       except json.JSONDecodeError as e:
                           print(f"Error decoding JSON from agent's response: {e}")
                           print("Agent's raw response content:")
@@ -242,7 +245,8 @@ class ResumeAIUpdater:
          raise ValueError("No valid updated resume data received from the AI agent.")
       else:
           print("Updated resume received from AI agent:")
-          # print(updated_resume)   
+
+          print(updated_resume)   
           return updated_resume
 
     
@@ -341,23 +345,26 @@ json_data = """
 }
 """
 
+job_requirements_str = json.dumps("python, data analysis, machine learning")
+job_description_str = json.dumps("Looking for a data analyst with experience in Python and machine learning.")
+
 if __name__ == "__main__":
 
     # Example usage of the ResumeAIUpdater class
     # Replace with your actual connection string and agent ID
     connection_string = os.environ.get("Updating_Connection_String")
     agent_id = os.environ.get("Updating_Agent_ID")
-
+    resume_updater = ResumeAIUpdater(connection_string, agent_id)
     # # Use the existing json_data for the resume
-    # original_resume_str = json_data
-    # instruction = "Given the following job requirements, job description, and my resume in JSON format,please update the 'resume' section by incorporating relevant keywords from the 'job_description' and 'job_requirements' into the 'summary', 'projects description' and 'skills' sections. Ensure the updated resume is returned ONLY as a valid JSON object. Do not include any explanations, Markdown formatting, or code fences. The response must start with { and end with }\n\n"
-    # # instruction = "Match the job requirments and description with key words. return percentage of match that profile and job, and also return skills required for the job which are not present in resume i.e keywords. Just return percentage and skills in JSON format. Do not include any additional text or formatting outside the JSON.\n\n"
-    # updated_resume_data = resume_updater.update_resume_with_ai(
-    #     job_requirements_str,
-    #     job_description_str,
-    #     original_resume_str,
-    #     instruction
-    # )
+    original_resume_str = json_data
+    instruction = "Given the following job requirements, job description, and my resume in JSON format,please update the 'resume' section by incorporating relevant keywords from the 'job_description' and 'job_requirements' into the 'summary', 'projects description' and 'skills' sections. Ensure the updated resume is returned ONLY as a valid JSON object. Do not include any explanations, Markdown formatting, or code fences. The response must start with { and end with }\n\n"
+    # instruction = "Match the job requirments and description with key words. return percentage of match that profile and job, and also return skills required for the job which are not present in resume i.e keywords. Just return percentage and skills in JSON format. Do not include any additional text or formatting outside the JSON.\n\n"
+    updated_resume_data = resume_updater.update_resume_with_ai(
+        job_requirements_str,
+        job_description_str,
+        original_resume_str,
+        instruction
+    )
 
     # if updated_resume_data:
     #     print("\n--- Final Updated Resume Data ---")
