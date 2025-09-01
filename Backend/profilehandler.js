@@ -1,32 +1,127 @@
 const User = require("./models/User");
 const UserProfile = require("./models/userprofile");
+const pdfParse = require("pdf-parse");
+const mammoth = require("mammoth");
 
 async function handleSaveProfile(req, res) {
+  // try {
+  //   const email = req.params.email; // get email from URL
+  //   const data = req.body;
+
+  //   const user = await User.findOne({ email });
+
+  //   if (!user) {
+  //     return res.status(404).json({ error: "User not found" });
+  //   }
+
+  //   let profile = await UserProfile.findOne({ user: user._id });
+
+  //   if (profile) {
+  //     Object.assign(profile, data); // update existing profile
+  //   } else {
+  //     profile = new UserProfile({ user: user._id, ...data }); // new profile
+  //   }
+
+  //   await profile.save();
+
+  //   res.status(200).json({ message: "Profile saved successfully", profile });
+  // } catch (err) {
+  //   console.error("Save profile error:", err);
+  //   res.status(500).json({ error: "Internal server error" });
+  // }
+
   try {
     const email = req.params.email; // get email from URL
     const data = req.body;
 
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Find or create profile
     let profile = await UserProfile.findOne({ user: user._id });
-
     if (profile) {
       Object.assign(profile, data); // update existing profile
     } else {
       profile = new UserProfile({ user: user._id, ...data }); // new profile
     }
 
+    // Handle uploaded file if exists
+    if (req.file) {
+      profile.resume = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+        filename: req.file.originalname,
+      };
+      // 🔹 Try parsing the resume
+      if (req.file.mimetype === "application/pdf") {
+        const parsed = await pdfParse(req.file.buffer);
+        profile.resume.parsedData = {
+          rawText: parsed.text,
+          metadata: parsed.info,
+        };
+      } else if (
+        req.file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        const parsed = await mammoth.extractRawText({
+          buffer: req.file.buffer,
+        });
+        profile.resume.parsedData = {
+          rawText: parsed.value,
+        };
+      }
+    }
+
     await profile.save();
 
-    res.status(200).json({ message: "Profile saved successfully", profile });
+    res.status(200).json({
+      message: "Profile, document, and parsed resume saved successfully",
+      profile,
+    });
   } catch (err) {
-    console.error("Save profile error:", err);
+    console.error("Save profile and upload error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 }
 
-module.exports = { handleSaveProfile };
+// fetch user profile details
+async function handleGetProfile(req, res) {
+  try {
+    const email = req.params.email;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const profile = await UserProfile.findOne({ user: user._id }).lean();
+
+    if (!profile) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    // exclude resume binary for lightweight response
+    //const { resume, ...profileData } = profile;
+    let parsedData = null;
+    if (profile.resume) {
+      // exclude raw binary data
+      parsedData: profile.resume.parsedData || null;
+    }
+
+    res.status(200).json({
+      message: "Profile fetched successfully",
+      user: { id: user._id, email: user.email, name: user.name },
+      profile: {
+        profile,
+        parsedData,
+      },
+    });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+module.exports = { handleSaveProfile, handleGetProfile };

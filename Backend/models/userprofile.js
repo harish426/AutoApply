@@ -50,6 +50,7 @@ const userProfileSchema = new mongoose.Schema(
       data: Buffer, // store file content
       contentType: String, // store MIME type (e.g., application/pdf)
       filename: String, // optional: store original filename
+      parsedData: mongoose.Schema.Types.Mixed, // holds text + optional metadata
     },
 
     workAuthorization: {

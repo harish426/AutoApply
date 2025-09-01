@@ -6,21 +6,23 @@ const REFRESH_TOKEN_SECRET =
 
 function generateAccessToken(user) {
   return jwt.sign({ id: user._id, email: user.email }, ACCESS_TOKEN_SECRET, {
-    expiresIn: "    ",
+    expiresIn: "15m", // 15 minutes
   });
 }
 
 function generateRefreshToken(user) {
   return jwt.sign({ id: user._id, email: user.email }, REFRESH_TOKEN_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "7d", // 7days
   });
 }
 
 function verifyAccessToken(token) {
   try {
+    //console.log(ACCESS_TOKEN_SECRET);
     return jwt.verify(token, ACCESS_TOKEN_SECRET);
   } catch (err) {
-    return null; // return null if invalid
+    console.error("Access token verification failed:", err.message);
+    return null;
   }
 }
 
@@ -28,7 +30,8 @@ function verifyRefreshToken(token) {
   try {
     return jwt.verify(token, REFRESH_TOKEN_SECRET);
   } catch (err) {
-    return null; // return null if invalid
+    console.error("Refresh token verification failed:", err.message);
+    return null;
   }
 }
 
