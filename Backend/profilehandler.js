@@ -1,5 +1,7 @@
 const User = require("./models/User");
 const UserProfile = require("./models/userprofile");
+const pdfParse = require("pdf-parse");
+const mammoth = require("mammoth");
 
 async function handleSaveProfile(req, res) {
   // try {
@@ -52,13 +54,32 @@ async function handleSaveProfile(req, res) {
         contentType: req.file.mimetype,
         filename: req.file.originalname,
       };
+      // 🔹 Try parsing the resume
+      if (req.file.mimetype === "application/pdf") {
+        const parsed = await pdfParse(req.file.buffer);
+        profile.resume.parsedData = {
+          rawText: parsed.text,
+          metadata: parsed.info,
+        };
+      } else if (
+        req.file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        const parsed = await mammoth.extractRawText({
+          buffer: req.file.buffer,
+        });
+        profile.resume.parsedData = {
+          rawText: parsed.value,
+        };
+      }
     }
 
     await profile.save();
 
-    res
-      .status(200)
-      .json({ message: "Profile and document saved successfully", profile });
+    res.status(200).json({
+      message: "Profile, document, and parsed resume saved successfully",
+      profile,
+    });
   } catch (err) {
     console.error("Save profile and upload error:", err);
     res.status(500).json({ error: "Internal server error" });
