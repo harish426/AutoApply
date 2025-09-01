@@ -86,4 +86,42 @@ async function handleSaveProfile(req, res) {
   }
 }
 
-module.exports = { handleSaveProfile };
+// fetch user profile details
+async function handleGetProfile(req, res) {
+  try {
+    const email = req.params.email;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const profile = await UserProfile.findOne({ user: user._id }).lean();
+
+    if (!profile) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    // exclude resume binary for lightweight response
+    //const { resume, ...profileData } = profile;
+    let parsedData = null;
+    if (profile.resume) {
+      // exclude raw binary data
+      parsedData: profile.resume.parsedData || null;
+    }
+
+    res.status(200).json({
+      message: "Profile fetched successfully",
+      user: { id: user._id, email: user.email, name: user.name },
+      profile: {
+        profile,
+        parsedData,
+      },
+    });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+module.exports = { handleSaveProfile, handleGetProfile };
