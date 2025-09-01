@@ -47,6 +47,18 @@ async function handleSaveProfile(req, res, next) {
 /**
  * Download Resume
  */
+
+// fetch profile
+async function handleGetProfile(req, res, next) {
+  try {
+    const profileres = await profile.handleGetProfile(req, res);
+    return profileres;
+  } catch (error) {
+    console.error("Error in handleGetProfile:", error.message || error);
+    error.message = "Failed to fetch user profile. Please try again.";
+    next(error);
+  }
+}
 async function handleDownload(req, res, next) {
   try {
     const downloadRes = await uploads.handleDownloadDocument(req, res);
@@ -62,5 +74,6 @@ module.exports = {
   handleLogin,
   handleSaveProfile,
   //handleUploads,
+  handleGetProfile,
   handleDownload,
 };

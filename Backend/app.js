@@ -40,6 +40,7 @@ app.post(
 //   upload.single("resume"),
 //   api.handleUploads
 // );
+app.get("/profile/:email", authenticateToken, api.handleGetProfile);
 app.get("/download/:email", authenticateToken, api.handleDownload);
 
 app.use(handleError);
