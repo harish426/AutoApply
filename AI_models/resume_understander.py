@@ -59,6 +59,7 @@ PREREQUISITES:
 
 import json
 import os
+from Database_Handler.database_link import database
 import dotenv
 
 dotenv.load_dotenv()
@@ -130,11 +131,10 @@ class ResumeUnderstander:
         # If analyzing a local document, remove the comment markers (#) at the beginning of these 8 lines.
         # Delete or comment out the part of "Analyze a document at a URL" above.
         # Replace <path to your sample file>  with your actual file path.
-        path_to_sample_document = "D:\\Downloads\\Harish Resume.pdf"
-        with open(path_to_sample_document, "rb") as f:
-            poller = document_analysis_client.begin_analyze_document(
-                "prebuilt-read", document=f, features=[AnalysisFeature.LANGUAGES]
-            )
+        # path_to_sample_document = "D:\\Downloads\\Harish Resume.pdf"
+        poller = document_analysis_client.begin_analyze_document(
+            "prebuilt-read", document=pdf_in_buffer, features=[AnalysisFeature.LANGUAGES]
+        )
         result = poller.result()
 
 
@@ -184,11 +184,17 @@ if __name__ == "__main__":
     from azure.core.exceptions import HttpResponseError
     from resume_Parser import ResumeAIParser
 
-    resumeparser= ResumeAIParser()
 
     try:
+        resumeparser= ResumeAIParser()
         agent=ResumeUnderstander()
-        text=agent.analyze_read()
+
+        db=database("test1@gmail.com")
+
+        buffer=db.download_document_from_api()
+
+        text=agent.analyze_read(buffer)
+
         updated_resume_data=resumeparser.parse_resume_with_ai(text)
         updated_resume_data=json.loads(updated_resume_data)
         if updated_resume_data:
