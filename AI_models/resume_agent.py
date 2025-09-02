@@ -5,7 +5,7 @@ import json
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 import os
-
+from Database_Handler.database_link import database
 import dotenv
 dotenv.load_dotenv()
 
