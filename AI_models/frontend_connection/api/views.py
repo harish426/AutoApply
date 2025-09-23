@@ -86,14 +86,21 @@ def UpdateResume(request):
 
 
 @api_view(['POST'])
-def chat_bot(request):
+def chatbot(request):
+    if request.method == 'POST':
+        question=request.data.get('question')
+        print(question)
+        return JsonResponse({"sucess":"got data"})
+
+@api_view(['POST'])
+def external_resume_update(request):
     if request.method == 'POST':
         company_name = request.data.get('company_name')
         job_title = request.data.get('job_title')
         job_description = request.data.get('job_description')
         job_requirements = request.data.get('job_requirements')
         question = request.data.get('question')
-
+        return JsonResponse({"sucess":"good"})
  
 @api_view(['POST'])
 def document_uploaded(request):
