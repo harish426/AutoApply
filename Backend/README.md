@@ -1,8 +1,9 @@
-# README.md
-
 # Auto Apply — Resume/Profile API
 
 A simple Express + MongoDB backend to register users (Google-style email+name), save user profiles with an uploaded resume (stored in MongoDB as binary), and download resumes.
+Now also includes job application management (save, fetch, delete).
+
+---
 
 ## Quick overview
 
@@ -11,6 +12,8 @@ A simple Express + MongoDB backend to register users (Google-style email+name), 
 - File uploads handled by `multer` (memory storage)
 - JWT for authentication (access & refresh tokens)
 
+---
+
 ## Prerequisites
 
 - Node.js (LTS recommended, e.g. v18 or later)
@@ -18,8 +21,11 @@ A simple Express + MongoDB backend to register users (Google-style email+name), 
 - MongoDB running locally or a MongoDB Atlas connection string
 - (Optional) Docker (if you want to run MongoDB via Docker)
 
+---
+
 ## Project structure (important files)
 
+```
 .
 ├─ app.js
 ├─ api.js
@@ -34,60 +40,60 @@ A simple Express + MongoDB backend to register users (Google-style email+name), 
 │ ├─ User.js
 │ └─ userprofile.js
 └─ package.json
+```
+
+---
 
 ## Environment variables
 
-Create a `.env` file in the project root with values like:
+Create a `.env` file in the project root:
 
+```
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/autodoc
 JWT_SECRET=your_access_token_secret_here
 JWT_REFRESH_SECRET=your_refresh_token_secret_here
+```
 
-> **Important**: Use strong random strings for `JWT_SECRET` and `JWT_REFRESH_SECRET` in production.
+> Use strong random strings for `JWT_SECRET` and `JWT_REFRESH_SECRET` in production.
+
+---
 
 ## Install & run (step-by-step)
 
-1. Clone the repository (or put code in a folder):
+1. Clone the repository:
 
-````bash
+```bash
 git clone https://github.com/harish426/AutoApply.git
-cd my-autoapply
+cd AutoApply
+```
 
 2. Install dependencies:
 
 ```bash
-# using npm
-npm install express body-parser mongoose
-
-npm install multer
-
-npm install jsonwebtoken
-
-npm install bcrypt
-
-npm install pdf-parse mammoth
-
-# optional dev tools
+npm install express body-parser mongoose multer jsonwebtoken bcrypt pdf-parse mammoth dotenv
 npm install --save-dev nodemon
+```
 
-# OR using yarn
+or using yarn:
+
+```bash
 yarn add express body-parser mongoose multer jsonwebtoken dotenv
 yarn add --dev nodemon
-````
+```
 
-3. (If you don't have MongoDB running) start MongoDB:
+3. Start MongoDB:
 
 - **Locally**: make sure `mongod` is running
-- **Docker** (quick):
+- **Docker**:
 
 ```bash
 docker run -d -p 27017:27017 --name mongo mongo:6.0
 ```
 
-4. Create `.env` (see above) and add your values.
+4. Add `.env` with your configuration.
 
-5. Add scripts to `package.json` (example):
+5. Add scripts to `package.json`:
 
 ```json
 "scripts": {
@@ -99,18 +105,19 @@ docker run -d -p 27017:27017 --name mongo mongo:6.0
 6. Start the server:
 
 ```bash
-# production
-npm start
-
-# development (auto-restart)
-npm run dev
+npm start        # production
+npm run dev      # development with auto-restart
 ```
 
 Server should log: `Server running at http://localhost:3000`
 
-## API endpoints & examples
+---
+
+## API Endpoints & Examples
 
 > Base URL: `http://localhost:3000`
+
+---
 
 ### 1) Login (generate tokens)
 
@@ -122,7 +129,7 @@ Body:
 { "email": "user@example.com", "name": "User Name" }
 ```
 
-**Example (curl)**:
+**Example (curl):**
 
 ```bash
 curl -X POST http://localhost:3000/login \
@@ -132,17 +139,21 @@ curl -X POST http://localhost:3000/login \
 
 Response contains `accessToken`, `refreshToken`, and `user`.
 
-### 2) Save profile (protected + file upload)
+---
+
+### 2) Save Profile (with resume upload)
 
 **POST** `/profile/:email`
 Headers:
 
 - `Authorization: Bearer <accessToken>`
-  Body: `multipart/form-data`
-- File field name: `resume` (PDF or DOCX)
-- Other text fields: send as individual form fields (e.g. `phone`, `summary`, etc.)
 
-**Example (curl)**:
+Body: `multipart/form-data`
+
+- File field: `resume` (PDF/DOCX)
+- Other fields: e.g., `phone`, `summary`
+
+**Example (curl):**
 
 ```bash
 TOKEN="<access_token_from_login>"
@@ -154,116 +165,238 @@ curl -X POST "http://localhost:3000/profile/test@example.com" \
   -F "summary=Experienced developer"
 ```
 
-Notes:
+- The server uses `multer.memoryStorage()` → `req.file.buffer` stores the file in MongoDB.
+- Sending a string URL instead of a file will throw `Cast to Object failed`. Use `resumeUrl` or change schema.
 
-- The server uses `multer.memoryStorage()` so `req.file.buffer` will contain the file bytes and the profile is saved with:
+---
 
-  ```js
-  profile.resume = {
-    data: req.file.buffer,
-    contentType: req.file.mimetype,
-    filename: req.file.originalname,
-  };
-  ```
-
-- If you send a string URL as `resume` (e.g. `"https://.../resume.pdf"`), Mongoose may throw:
-  `Cast to Object failed for value "https://..." at path "resume"`. Use file upload or change schema to accept URL.
-
-### 3) Download resume (protected)
+### 3) Download Resume
 
 **GET** `/download/:email`
 Headers:
 
 - `Authorization: Bearer <accessToken>`
 
-**Example (curl)**:
+**Example (curl):**
 
 ```bash
 TOKEN="<access_token_from_login>"
+
 curl -X GET "http://localhost:3000/download/test@example.com" \
   -H "Authorization: Bearer $TOKEN" \
   -o downloaded_resume.pdf
 ```
 
-## Helpful tips & testing
+---
 
-- In Postman:
+### 4) Fetch Profile (exclude binary resume)
 
-  - For login: `POST /login`, JSON body.
-  - For profile upload: set Authorization -> Bearer Token (paste accessToken), choose form-data and add `resume` as File type.
+**GET** `/api/profile/:email`
 
-- If you get **"No document found"** on download, check that `profile.resume` exists in MongoDB and has `data` and `filename`.
+**Example:**
 
-## Common issues & fixes
+```bash
+curl -X GET http://localhost:3000/api/profile/test@example.com
+```
 
-### 1. `JWT malformed` or `Access token required.`
+**Response:**
 
-- Make sure you send header exactly as:
-  `Authorization: Bearer <accessToken>`
-  Example:
-
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR...
-
-- Current `authmiddleware.js` uses `authHeader.slice(7, authHeader.length)` which assumes `authHeader` exists and starts with `'Bearer '`; if header is missing, this will throw. Recommended robust extraction:
-
-```js
-// safer alternative for authmiddleware.js
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader)
-    return res.status(401).json({ error: "Access token required." });
-
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
-    return res
-      .status(401)
-      .json({ error: 'Authorization header malformed. Use "Bearer <token>"' });
+```json
+{
+  "message": "Profile fetched successfully",
+  "user": {
+    "id": "64f9c12a1f8a0c89d1e4a7c1",
+    "email": "test@example.com",
+    "name": "Test User"
+  },
+  "profile": {
+    "phone": "1234567890",
+    "summary": "Experienced developer",
+    "resume": {
+      "filename": "resume.pdf",
+      "contentType": "application/pdf",
+      "parsedData": {
+        "rawText": "This is the extracted text from resume...",
+        "metadata": { "title": "My Resume", "author": "Test User" }
+      }
+    }
   }
-  const token = parts[1];
-
-  const decoded = verifyAccessToken(token);
-  if (!decoded)
-    return res.status(403).json({ error: "Invalid or expired token." });
-
-  req.user = decoded;
-  next();
 }
 ```
 
-### 2. `Cast to Object failed for value "https://..." (type string) at path "resume"`
+---
 
-- Your schema expects `resume` to be an object `{ data, contentType, filename }`. If you want to store a URL instead, change schema or use a separate field like `resumeUrl` (string).
-
-### 3. CORS / Preflight errors (browser requests)
-
-- Ensure server allows `Authorization` header. Update `app.js` middleware:
+## 🔹 Resume Schema Example (MongoDB)
 
 ```js
-res.header(
-  "Access-Control-Allow-Headers",
-  "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-);
-res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-if (req.method === "OPTIONS") return res.sendStatus(200);
+const resumeSchema = new mongoose.Schema({
+  data: Buffer, // binary (excluded in GET)
+  contentType: String,
+  filename: String,
+  parsedData: {
+    rawText: String,
+    metadata: Object,
+  },
+});
 ```
-
-### 4. Memory usage when uploading large files
-
-- `multer.memoryStorage()` keeps uploads in RAM; for large files or production, use `diskStorage` or upload directly to cloud (S3) and store URL in DB.
 
 ---
 
-## Production suggestions
+## 5) Job Application APIs
 
-- Use HTTPS.
-- Use strong secrets and rotate them.
-- Use a persistent file store (S3, GCS) for resumes instead of DB for large-scale apps.
-- Add rate limiting, logging, and proper error reporting.
-- Validate file size and enforce limits in `multer` config:
+These APIs allow users to **save**, **fetch**, and **delete rejected** job applications.
 
-```js
-multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } }); // 5 MB
+---
+
+#### a) Save Job Application
+
+**POST** `/job/:email`
+Headers: `Authorization: Bearer <accessToken>`
+Body: `multipart/form-data`
+
+- File field: `resume` (optional)
+- Other fields: `jobTitle`, `company`, `status`
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:3000/job/test@example.com" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "resume=@/path/to/resume.pdf" \
+  -F "jobTitle=Software Engineer" \
+  -F "company=Acme Corp" \
+  -F "status=Applied"
 ```
+
+**Behavior:**
+
+- Creates a new application or updates existing one for the same user.
+- Stores uploaded resume binary and metadata.
+
+**Response:**
+
+```json
+{
+  "message": "Job application saved successfully",
+  "jobApplication": {
+    "_id": "64f9c12a1f8a0c89d1e4a7c2",
+    "user": "64f9c12a1f8a0c89d1e4a7c1",
+    "jobTitle": "Software Engineer",
+    "company": "Acme Corp",
+    "status": "Applied",
+    "customResume": {
+      "filename": "resume.pdf",
+      "contentType": "application/pdf"
+    }
+  }
+}
+```
+
+---
+
+#### b) Fetch Saved Job Applications
+
+**GET** `/savedjob/:email`
+Headers: `Authorization: Bearer <accessToken>`
+
+**Example:**
+
+```bash
+curl -X GET "http://localhost:3000/savedjob/test@example.com" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Behavior:**
+
+- Fetches all applications for the user.
+- Excludes binary resume data for lighter responses.
+- Groups applications by status: `Applied`, `Rejected`, `Liked`.
+
+**Response:**
+
+```json
+{
+  "message": "Job applications fetched and grouped successfully",
+  "applications": {
+    "applied": [
+      {
+        "jobTitle": "Software Engineer",
+        "company": "Acme Corp",
+        "status": "Applied"
+      }
+    ],
+    "rejected": [
+      {
+        "jobTitle": "Backend Developer",
+        "company": "Beta Inc",
+        "status": "Rejected"
+      }
+    ],
+    "liked": [
+      {
+        "jobTitle": "Frontend Developer",
+        "company": "Gamma LLC",
+        "status": "Liked"
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### c) Delete Rejected Job Applications
+
+**DELETE** `/deleteapp/:email`
+Headers: `Authorization: Bearer <accessToken>`
+
+**Example:**
+
+```bash
+curl -X DELETE "http://localhost:3000/deleteapp/test@example.com" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Behavior:**
+
+- Deletes **all rejected applications** for the user.
+- Other applications remain untouched.
+
+**Response:**
+
+```json
+{
+  "message": "2 rejected applications deleted successfully"
+}
+```
+
+---
+
+## ✅ Notes
+
+- `customResume.data` is **never returned** in fetch API responses.
+- Save API supports **file upload** or **resume URL**.
+- Job applications require authentication via `Bearer token`.
+- Fetching groups applications by `status`.
+- Deletion only removes rejected applications.
+
+---
+
+## Troubleshooting / Common Issues
+
+- **JWT malformed / missing:** Make sure header is `Authorization: Bearer <accessToken>`
+- **Cast to Object failed for resume URL:** Use file upload or modify schema for URL.
+- **CORS / Preflight:** Ensure `Authorization` header is allowed.
+- **Memory usage:** `multer.memoryStorage()` keeps files in RAM; for large files, consider disk storage or cloud.
+
+---
+
+## Production Suggestions
+
+- Use HTTPS, strong secrets, and rotate tokens.
+- Store resumes in cloud storage for large-scale apps.
+- Enforce file size limits in `multer`.
+- Add logging, rate limiting, and proper error handling.
 
 ---
 
@@ -291,13 +424,3 @@ multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } }); // 5 MB
   }
 }
 ```
-
----
-
-## Troubleshooting checklist
-
-- Is MongoDB running and `MONGO_URI` correct?
-- Does `.env` exist and loaded? (If you use `dotenv`, require it in `app.js`.)
-- Are you passing the `Authorization` header exactly as `Bearer <token>`?
-- When using `curl` with file upload, use `-F` to send multipart/form-data.
-- Check server logs for stack traces; `console.error` outputs helpful messages.
