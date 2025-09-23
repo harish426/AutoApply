@@ -2,9 +2,7 @@ const authUtil = require("./authutil");
 const profile = require("./profilehandler");
 const uploads = require("./uploadutil");
 
-/**
- * Handles login (Google)
- */
+// Handles login (Google)
 async function handleLogin(req, res, next) {
   try {
     const loginres = await authUtil.userLogin(req, res);
@@ -16,9 +14,7 @@ async function handleLogin(req, res, next) {
   }
 }
 
-/**
- * Save Profile
- */
+// Save Profile
 async function handleSaveProfile(req, res, next) {
   try {
     const profileres = await profile.handleSaveProfile(req, res);
@@ -30,28 +26,22 @@ async function handleSaveProfile(req, res, next) {
   }
 }
 
-/**
- * Upload Resume
- */
-// async function handleUploads(req, res, next) {
-//   try {
-//     const uploadsresume = await uploads.handleUploadDocument(req, res);
-//     return uploadsresume;
-//   } catch (error) {
-//     console.error("Error in handleUploads:", error.message || error);
-//     error.message = "Failed to upload resume. Please try again.";
-//     next(error);
-//   }
-// }
-
-/**
- * Download Resume
- */
-
 // fetch profile
 async function handleGetProfile(req, res, next) {
   try {
     const profileres = await profile.handleGetProfile(req, res);
+    return profileres;
+  } catch (error) {
+    console.error("Error in handleSaveJobApplication:", error.message || error);
+    error.message = "Failed to save the job application. Please try again.";
+    next(error);
+  }
+}
+
+// Save the job applications
+async function handleJobApplication(req, res, next) {
+  try {
+    const profileres = await profile.handleSaveJobApplication(req, res);
     return profileres;
   } catch (error) {
     console.error("Error in handleGetProfile:", error.message || error);
@@ -59,6 +49,59 @@ async function handleGetProfile(req, res, next) {
     next(error);
   }
 }
+
+// Fetch all job applications for a user
+async function handleGetJobApplications(req, res, next) {
+  try {
+    const applications = await profile.handleFetchJobApplications(req, res);
+    return applications;
+  } catch (error) {
+    console.error("Error in handleGetJobApplications:", error.message || error);
+    error.message = "Failed to fetch job applications. Please try again.";
+    next(error);
+  }
+}
+
+// Delete a job application for a user
+async function handleDeleteJobApplication(req, res, next) {
+  try {
+    const deletedApp = await profile.handleDeleteJobApplication(req, res);
+    return deletedApp;
+  } catch (error) {
+    console.error(
+      "Error in handleDeleteJobApplication:",
+      error.message || error
+    );
+    error.message = "Failed to delete job application. Please try again.";
+    next(error);
+  }
+}
+
+// Save or edit resume
+async function handleSaveOrEditResume(req, res, next) {
+  try {
+    const savedResume = await resumeHandler.handleSaveResume(req, res);
+    return savedResume;
+  } catch (error) {
+    console.error("Error in handleSaveOrEditResume:", error.message || error);
+    error.message = "Failed to save or edit resume. Please try again.";
+    next(error);
+  }
+}
+
+// Get resume data
+async function handleGetResumeData(req, res, next) {
+  try {
+    const resumeData = await resumeHandler.handleGetResume(req, res);
+    return resumeData;
+  } catch (error) {
+    console.error("Error in handleGetResumeData:", error.message || error);
+    error.message = "Failed to fetch resume data. Please try again.";
+    next(error);
+  }
+}
+
+// Download Resume
 async function handleDownload(req, res, next) {
   try {
     const downloadRes = await uploads.handleDownloadDocument(req, res);
@@ -73,7 +116,11 @@ async function handleDownload(req, res, next) {
 module.exports = {
   handleLogin,
   handleSaveProfile,
-  //handleUploads,
+  handleJobApplication,
+  handleGetJobApplications,
+  handleDeleteJobApplication,
   handleGetProfile,
   handleDownload,
+  handleSaveOrEditResume,
+  handleGetResumeData,
 };
