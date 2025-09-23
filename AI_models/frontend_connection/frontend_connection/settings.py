@@ -15,10 +15,12 @@ import os
 import sys
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(os.path.join(BASE_DIR, 'AI_models')) 
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Add parent directory of Django project (AI_models) to sys.path
+EXTERNAL_DIR = BASE_DIR.parent   # This points to D:\Autoapply\AI_models
+sys.path.append(str(EXTERNAL_DIR))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -29,6 +31,7 @@ SECRET_KEY = "django-insecure-i4pkel0#hs^qz@))&w+#ex@u@4^lh#ywl0-*dqf4*xaunb(c0s
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
 
 
 # Application definition

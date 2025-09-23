@@ -3,6 +3,12 @@
 import os
 import sys
 
+from pathlib import Path   # make sure this is the one you import!
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+EXTERNAL_DIR = BASE_DIR.parent / "AI_models/Database_Handler"
+sys.path.append(str(EXTERNAL_DIR))
 
 def main():
     """Run administrative tasks."""

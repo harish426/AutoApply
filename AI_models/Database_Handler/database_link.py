@@ -24,14 +24,19 @@ class database:
 
 
 
-    def get_user_data(self):
+    def get_resume(self):
         """
         Fetches user resume data in JSON format from a Node.js API endpoint.
         """
-        response = requests.get(f"http://localhost:3000/getUserData/{self.email_id}")
+
+        response = requests.get(f"http://localhost:3000/profile/test1@gamil.com")
 
         if response.status_code == 200:
-            return response.json()
+            data=response.json()
+            json_resume = data['profile']['profile']['resume']['parsedData']['rawText']
+            # print(json_resume)
+            print("✅ User data fetched successfully")
+            return json_resume
         else:
             print(f"❌ Error: {response.status_code} - {response.text}")
             return None
@@ -50,4 +55,7 @@ class database:
             return None
 
 
-    
+if __name__ == "__main__":
+    email = "test1@gmail.com"
+    db_instance = database(email)
+    db_instance.get_user_data()

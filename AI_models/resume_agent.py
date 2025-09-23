@@ -5,7 +5,6 @@ import json
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 import os
-from Database_Handler.database_link import database
 import dotenv
 dotenv.load_dotenv()
 
@@ -97,9 +96,6 @@ class ResumeAIUpdater:
           }
           or None if an error occurs.
       """
-      db = database("username", "http://localhost:3000/api/download")
-      job_requirements_json,job_description_json=db.application_information()
-      resume_json=db.get_user_resume_json("http://localhost:3000/api/resume")
       try:
           job_requirements = json.loads(job_requirements_json)
           job_description = json.loads(job_description_json)
@@ -210,17 +206,17 @@ class ResumeAIUpdater:
           content=instruction + f"{json_input_content}"
       )
 
-      print("Sending message to agent and processing run...")
+      print("Sending message to agent at resume_agent and processing run...")
       run = self.project_client.agents.create_and_process_run(
           thread_id=thread.id,
           agent_id=self.agent.id
       )
-      print("Run completed. Retrieving messages...")
+      print("Run completed. Retrieving messages at resume_agent...")
 
       messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
       updated_resume = None
       if not messages_list_response.data:
-          print("No messages found in the thread after run completion.")
+          print("No messages found in the thread after run completion in resume_agent.")
       for message_list in messages_list_response.data:
           # Only process assistant messages
           if getattr(message_list, "role", None) == "assistant":
@@ -245,8 +241,7 @@ class ResumeAIUpdater:
          raise ValueError("No valid updated resume data received from the AI agent.")
       else:
           print("Updated resume received from AI agent:")
-
-          print(updated_resume)   
+          print(updated_resume)
           return updated_resume
 
     

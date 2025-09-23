@@ -2,8 +2,7 @@ import json
 import re
 import os
 from azure.ai.projects import AIProjectClient
-from azure.identity import DefaultAzureCredential
-from resume_pdf import ResumeBuilder  # Assuming this is the function to create PDF resumes
+from azure.identity import DefaultAzureCredential  # Assuming this is the function to create PDF resumes
 import dotenv
 
 dotenv.load_dotenv()
@@ -48,12 +47,12 @@ class ResumeAIParser:
             thread_id=thread.id,
             role="user",
             content=(
-                "Just follow instruction mentioned and don't add any '```json' or '```' in the response.\n"
+                "Just follow instruction mentioned instructor tab and don't add any '```json' or '```' in the response.\n"
                 f"{json_input_content}"
             )
         )
 
-        print("Sending message to agent and processing run...")
+        print("Sending message to parsing agent and processing run...")
         run = self.project_client.agents.create_and_process_run(
             thread_id=thread.id,
             agent_id=self.agent.id
@@ -61,7 +60,6 @@ class ResumeAIParser:
         print("Run completed. Retrieving messages...")
 
         messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
-        print(messages_list_response.data)
         updated_resume = None
         if not messages_list_response.data:
             print("No messages found in the thread after run completion.")
