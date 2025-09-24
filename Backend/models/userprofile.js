@@ -1,66 +1,39 @@
 const mongoose = require("mongoose");
 
-const experienceSchema = new mongoose.Schema({
-  employer: String,
-  jobTitle: String,
-  startDate: Date,
-  endDate: Date,
-  roleDescription: String,
-});
-
-const educationSchema = new mongoose.Schema({
-  school: String,
-  degree: String,
-  fieldOfStudy: String,
-});
-
 const userProfileSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    // Basic Info
     firstName: { type: String, required: true },
-    middleName: String,
     lastName: { type: String, required: true },
+    email: { type: String, required: true },
+    dateOfBirth: { type: Date },
 
-    cellPhone: String,
-    homePhone: String,
-    workPhone: String,
-    linkedIn: String,
-
+    // Address
     address: {
-      country: String,
-      addressLine1: String,
-      addressLine2: String,
-      city: String,
-      state: String,
-      zipCode: String,
+      street1: { type: String, required: true },
+      street2: { type: String },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      zipCode: { type: String, required: true },
+      country: { type: String, required: true },
     },
 
-    hearAboutUs: String,
+    // Work Authorization
+    requireVisaSponsorship: { type: Boolean, default: false },
+    presentVisaStatus: { type: String },
 
-    experiences: [experienceSchema],
+    // Demographics
+    disabilityStatus: { type: Boolean, default: false },
+    veteranStatus: { type: Boolean, default: false },
+    hispanicOrLatino: { type: Boolean, default: false },
 
-    educations: [educationSchema],
-
-    certifications: [String],
-
-    skills: [String],
-
-    resume: {
-      data: Buffer, // store file content
-      contentType: String, // store MIME type (e.g., application/pdf)
-      filename: String, // optional: store original filename
-      parsedData: mongoose.Schema.Types.Mixed, // holds text + optional metadata
-    },
-
-    workAuthorization: {
-      authorizedToWorkInUS: Boolean,
-      requireVisaSponsorship: Boolean,
-    },
-
-    ethnicity: String,
-    veteranStatus: String,
-    disabilities: String,
+    // Preferences
+    willingToRelocate: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
