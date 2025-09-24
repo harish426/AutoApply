@@ -1,0 +1,172 @@
+.resume-view-container {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: slideIn 0.5s forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.close-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.resume-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.resume-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.resume-header button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #4f46e5;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 500;
+}
+
+.resume-header button:hover {
+    background-color: #4338ca;
+}
+
+.resume-body {
+    display: flex;
+    gap: 30px;
+}
+
+.editable-resume {
+    flex: 3;
+}
+
+.resume-pdf {
+    flex: 3;
+    height: 70vh;
+}
+
+.skills-section {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+}
+
+.skills-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.required-skills,
+.user-skills ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.required-skills li {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: grab;
+    transition: background-color 0.3s;
+}
+
+.required-skills li:hover {
+    background-color: #c7d2fe;
+}
+
+.user-skills {
+    margin-top: 20px;
+    border: 2px dashed #d1d5db;
+    padding: 15px;
+    min-height: 150px;
+    border-radius: 8px;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.user-skills.drag-over {
+    border-color: #4f46e5;
+    background-color: #f0f2ff;
+}
+
+.user-skills h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.user-skills ul li {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+.resume-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.resume-footer button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.resume-footer button:first-child {
+    background-color: #4f46e5;
+    color: white;
+}
+
+.resume-footer button:first-child:hover {
+    background-color: #4338ca;
+}
+
+.resume-footer button:last-child {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.resume-footer button:last-child:hover {
+    background-color: #d1d5db;
+}

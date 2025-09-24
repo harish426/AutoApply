@@ -1,0 +1,76 @@
+.chatbot {
+    width: 350px;
+    padding: 40px 30px;
+    background-color: #ffffff;
+    border-left: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.input, .textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #5a67d8;
+}
+
+.promptContainer {
+    margin-top: 30px;
+    background-color: #f0f2f5;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.promptHeader {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.promptText {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Mobile Styles */
+@media (max-width: 1024px) {
+    .chatbot {
+        display: none;
+    }
+}
