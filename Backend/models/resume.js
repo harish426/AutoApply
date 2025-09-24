@@ -1,22 +1,20 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const resumeSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true, // every resume must be linked to a user
+    },
     contact_info: {
       name: { type: String, required: true },
       email: { type: String, required: true },
       phone: { type: String },
       address: { type: String },
     },
-    summary: { type: String },
 
-    education: [
-      {
-        degree: String,
-        institution: String,
-        gpa: String,
-      },
-    ],
+    summary: { type: String },
 
     experience: [
       {
@@ -28,6 +26,20 @@ const resumeSchema = new mongoose.Schema(
       },
     ],
 
+    education: [
+      {
+        degree: String,
+        institution: String,
+        gpa: String,
+      },
+    ],
+
+    skills: {
+      Programming: [String], // e.g. ["JavaScript", "Python", "HTML", "CSS"]
+      Tools: [String], // e.g. ["React", "Node.js", "Git", "Webpack"]
+      Relevant_Courses: [String], // e.g. ["Data Structures", "Algorithms"]
+    },
+
     projects: [
       {
         title: String,
@@ -35,17 +47,12 @@ const resumeSchema = new mongoose.Schema(
       },
     ],
 
-    skills: {
-      Programming: [String],
-      Tools: [String],
-      Relevant_Courses: [String],
-    },
+    certifications: [String], // e.g. ["React Nanodegree"]
 
-    certifications: [String],
+    publications: [String], // new field added
   },
   { timestamps: true }
 );
 
-const Resume = mongoose.model("Resume", resumeSchema);
-
-export default Resume;
+// Export in CommonJS style
+module.exports = mongoose.model("Resume", resumeSchema);

@@ -1,6 +1,5 @@
 const authUtil = require("./authutil");
 const profile = require("./profilehandler");
-const uploads = require("./uploadutil");
 
 // Handles login (Google)
 async function handleLogin(req, res, next) {
@@ -32,8 +31,8 @@ async function handleGetProfile(req, res, next) {
     const profileres = await profile.handleGetProfile(req, res);
     return profileres;
   } catch (error) {
-    console.error("Error in handleSaveJobApplication:", error.message || error);
-    error.message = "Failed to save the job application. Please try again.";
+    console.error("Error in handleGetProfile:", error.message || error);
+    error.message = "Failed to get profile. Please try again.";
     next(error);
   }
 }
@@ -80,7 +79,7 @@ async function handleDeleteJobApplication(req, res, next) {
 // Save or edit resume
 async function handleSaveOrEditResume(req, res, next) {
   try {
-    const savedResume = await resumeHandler.handleSaveResume(req, res);
+    const savedResume = await profile.handleSaveResume(req, res);
     return savedResume;
   } catch (error) {
     console.error("Error in handleSaveOrEditResume:", error.message || error);
@@ -92,23 +91,11 @@ async function handleSaveOrEditResume(req, res, next) {
 // Get resume data
 async function handleGetResumeData(req, res, next) {
   try {
-    const resumeData = await resumeHandler.handleGetResume(req, res);
+    const resumeData = await profile.handleGetResume(req, res);
     return resumeData;
   } catch (error) {
     console.error("Error in handleGetResumeData:", error.message || error);
     error.message = "Failed to fetch resume data. Please try again.";
-    next(error);
-  }
-}
-
-// Download Resume
-async function handleDownload(req, res, next) {
-  try {
-    const downloadRes = await uploads.handleDownloadDocument(req, res);
-    return downloadRes;
-  } catch (error) {
-    console.error("Error in handleDownload:", error.message || error);
-    error.message = "Failed to download resume. Please try again.";
     next(error);
   }
 }
@@ -120,7 +107,6 @@ module.exports = {
   handleGetJobApplications,
   handleDeleteJobApplication,
   handleGetProfile,
-  handleDownload,
   handleSaveOrEditResume,
   handleGetResumeData,
 };

@@ -1,8 +1,7 @@
 const User = require("./models/User");
+const Resume = require("./models/resume");
 const UserProfile = require("./models/userprofile");
 const JobApplication = require("./models/jobapplication");
-const pdfParse = require("pdf-parse");
-const mammoth = require("mammoth");
 
 // Save profile + optional resume
 async function handleSaveProfile(req, res) {
@@ -16,32 +15,6 @@ async function handleSaveProfile(req, res) {
     let profile = await UserProfile.findOne({ user: user._id });
     if (profile) Object.assign(profile, data);
     else profile = new UserProfile({ user: user._id, ...data });
-
-    // Resume upload
-    if (req.file) {
-      profile.resume = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype,
-        filename: req.file.originalname,
-      };
-
-      // Parse resume content
-      if (req.file.mimetype === "application/pdf") {
-        const parsed = await pdfParse(req.file.buffer);
-        profile.resume.parsedData = {
-          rawText: parsed.text,
-          metadata: parsed.info,
-        };
-      } else if (
-        req.file.mimetype ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
-        const parsed = await mammoth.extractRawText({
-          buffer: req.file.buffer,
-        });
-        profile.resume.parsedData = { rawText: parsed.value };
-      }
-    }
 
     await profile.save();
     res.status(200).json({ message: "Profile saved successfully", profile });
@@ -62,12 +35,10 @@ async function handleGetProfile(req, res) {
     const profile = await UserProfile.findOne({ user: user._id }).lean();
     if (!profile) return res.status(404).json({ error: "Profile not found" });
 
-    const parsedData = profile.resume?.parsedData || null;
-
     res.status(200).json({
       message: "Profile fetched successfully",
       user: { id: user._id, email: user.email, name: user.name },
-      profile: { ...profile, parsedData },
+      profile,
     });
   } catch (err) {
     console.error("Get profile error:", err);

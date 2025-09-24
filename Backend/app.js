@@ -3,8 +3,6 @@ const bodyParser = require("body-parser");
 const db = require("./database/db");
 const { handleError } = require("./middleware");
 const api = require("./api");
-const upload = require("./upload");
-const jobApi = require("./profilehandler");
 const authenticateToken = require("./authmiddleware");
 
 const app = express();
@@ -29,10 +27,9 @@ app.use(function (req, res, next) {
 app.post("/login", api.handleLogin);
 
 // Protected routes
-app.post("/profile/:email", upload.single("resume"), api.handleSaveProfile);
+app.post("/profile/:email", api.handleSaveProfile);
 app.get("/profile/:email", api.handleGetProfile);
-app.get("/download/:email", api.handleDownload);
-app.post("/job/:email", upload.single("resume"), api.handleJobApplication);
+app.post("/job/:email", api.handleJobApplication);
 app.get("/savedjob/:email", api.handleGetJobApplications);
 app.delete("/deleteapp/:email", api.handleDeleteJobApplication);
 app.post("/resume/:email", api.handleSaveOrEditResume);
