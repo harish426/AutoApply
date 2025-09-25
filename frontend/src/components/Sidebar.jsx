@@ -4,7 +4,7 @@ import './Sidebar.css';
 
 const Sidebar = ({ isOpen, toggleSidebar, toggleAiAssistant }) => {
     const navigate = useNavigate();
-
+    const userData = JSON.parse(localStorage.getItem("user"));
     const handleLogout = async () => {
         navigate('/login');
     };
@@ -14,10 +14,10 @@ const Sidebar = ({ isOpen, toggleSidebar, toggleAiAssistant }) => {
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="logo">Auto Apply</div>
                 <div className="profile">
-                    <img src={'https://via.placeholder.com/40'} alt="Profile" className="profileImage" />
+                    <img src={userData?.photo || 'https://via.placeholder.com/40'} alt="Profile" className="profileImage" />
                     <div>
-                        <div className="profileName">John Doe</div>
-                        <div className="profileEmail">john.doe@example.com</div>
+                        <div className="profileName">{userData?.name || 'John Doe'}</div>
+                        <div className="profileEmail">{userData?.email || 'john.doe@example.com'}</div>
                     </div>
                 </div>
                 <nav className="nav">

@@ -9,6 +9,47 @@ const Login = ({ onLogin }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      const token = await user.getIdToken(); // if you need it
+      const userData = {
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL,
+        token: token,
+      };
+    // // Call API 1 → authentication & user profile
+    // const res1 = await fetch("http://localhost:5000/api/auth/google", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    //   body: JSON.stringify({
+    //     email: user.email,
+    //     token,
+    //   }),
+    // });
+
+    // if (!res1.ok) throw new Error("Auth API failed");
+    // const profile = await res1.json();
+
+    // // Store user data
+    // localStorage.setItem("profile", JSON.stringify(profile));
+
+    // // Call API 2 → maybe jobs, preferences, or custom user data
+    // const res2 = await fetch("http://localhost:5000/api/user/preferences", {
+    //   method: "GET",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
+
+    // if (!res2.ok) throw new Error("Preferences API failed");
+    // const resume = await res2.json();
+
+    // // Store resume separately
+    // localStorage.setItem("resume", JSON.stringify(resume));
+  
+      localStorage.setItem("user", JSON.stringify(userData));
       onLogin(user); // send user to App state
       navigate("/home"); // force redirect
     } catch (error) {
