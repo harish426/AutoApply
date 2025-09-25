@@ -91,6 +91,8 @@ def chatbot(request):
         question=request.data.get('question')
         print(question)
         return JsonResponse({"sucess":"got data"})
+    else:
+        return JsonResponse({"error": "This endpoint only accepts POST requests."}, status=405)
 
 @api_view(['POST'])
 def external_resume_update(request):
@@ -101,6 +103,10 @@ def external_resume_update(request):
         job_requirements = request.data.get('job_requirements')
         question = request.data.get('question')
         return JsonResponse({"sucess":"good"})
+    
+    else:
+        return JsonResponse({"error": "This endpoint only accepts POST requests."}, status=405)
+
  
 @api_view(['POST'])
 def document_uploaded(request):
