@@ -1,6 +1,6 @@
 import { Button, Paper, Title, Text } from "@mantine/core";
 import { FcGoogle } from "react-icons/fc";
-import { auth, provider, signInWithPopup } from "../firebase";
+import { auth, provider, signInWithPopup, signout } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
 const Login = ({ onLogin }) => {
@@ -18,41 +18,41 @@ const Login = ({ onLogin }) => {
       photo: user.photoURL,
       token: token,
     };
-    // Call API 1 → authentication & user profile
-    const res1 = await fetch("http://localhost:5000/api/auth/google", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        email: user.email,
-        token,
-      }),
-    });
+    // // Call API 1 → authentication & user profile
+    // const res1 = await fetch("http://localhost:5000/api/auth/google", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    //   body: JSON.stringify({
+    //     email: user.email,
+    //     token,
+    //   }),
+    // });  
 
-    if (!res1.ok) throw new Error("Auth API failed");
-    const profile = await res1.json();
+    // if (!res1.ok) throw new Error("Auth API failed");
+    // const profile = await res1.json();
 
-    // Store user data
-    localStorage.setItem("profile", JSON.stringify(profile));
+    // // Store user data
+    // localStorage.setItem("profile", JSON.stringify(profile));
 
-    // Call API 2 → maybe jobs, preferences, or custom user data
-    const res2 = await fetch("http://localhost:5000/api/user/preferences", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // // Call API 2 → maybe jobs, preferences, or custom user data
+    // const res2 = await fetch("http://localhost:5000/api/user/preferences", {
+    //   method: "GET",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
 
-    if (!res2.ok) throw new Error("Preferences API failed");
-    const resume = await res2.json();
+    // if (!res2.ok) throw new Error("Preferences API failed");
+    // const resume = await res2.json();
 
-    // Store resume separately
-    localStorage.setItem("resume", JSON.stringify(resume));
+    // // Store resume separately
+    // localStorage.setItem("resume", JSON.stringify(resume));
   
-    localStorage.setItem("user", JSON.stringify(userData));
-    onLogin(userData, profile, resume); // send user to App state
+    // localStorage.setItem("user", JSON.stringify(userData));
+    onLogin(userData); // send user to App state
     navigate("/home"); // force redirect
     } catch (error) {
       console.error("Google login error:", error);
