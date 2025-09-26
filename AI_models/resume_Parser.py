@@ -3,7 +3,7 @@ import re
 import os
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-from resume_pdf import ResumeBuilder  # Assuming this is the function to create PDF resumes
+
 import dotenv
 
 dotenv.load_dotenv()

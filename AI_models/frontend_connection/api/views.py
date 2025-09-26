@@ -61,9 +61,9 @@ def UpdateResume(request):
             if Updated_resume_json:
                 print("resume updated successfully")
 
-                resume_pdf_buffer=Agents.build_pdf_resume(user_name, job_title, Updated_resume_json)
+                resume_pdf_buffer=Agents.build_pdf_resume(user_name, Updated_resume_json)
                 if resume_pdf_buffer:
-                    print(f"PDF '{user_name}_{job_title}.pdf' generated successfully.")
+                    print(f"PDF '{user_name}.pdf' generated successfully.")
                     response = HttpResponse(resume_pdf_buffer, content_type="application/pdf")
                     response['Content-Disposition'] = f'attachment; filename="{user_name}_{job_title}.pdf"'
                     return response
