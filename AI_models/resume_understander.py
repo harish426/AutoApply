@@ -62,7 +62,7 @@ import os
 from Database_Handler.database_link import database
 import dotenv
 
-dotenv.load_dotenv()
+dotenv.load_dotenv(dotenv_path="D:/AutoApply0.3/AutoApply/AI_models/env")
 # ...existing code...
 
 # To learn the detailed concept of "polygon" in the following content, visit: https://aka.ms/V3.1-bounding-region

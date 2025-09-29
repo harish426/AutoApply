@@ -74,3 +74,19 @@
         display: none;
     }
 }
+
+.userMsg {
+  text-align: right;
+  background: #e0f7fa;
+  margin: 5px;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.aiMsg {
+  text-align: left;
+  background: #f1f1f1;
+  margin: 5px;
+  padding: 8px;
+  border-radius: 8px;
+}

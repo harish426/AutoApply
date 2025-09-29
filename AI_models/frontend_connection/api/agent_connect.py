@@ -27,6 +27,10 @@ class AgentConnector:
         # Call the resume updater to update the resume based on job requirements and description
         return self.resume_updater.update_resume_with_ai(resume_json, job_requirements_json, job_description_json)
 
-    def build_pdf_resume(self, user_name, title, resume_json):
+    def build_pdf_resume(self, resume_json):
         # Call the resume generator to create a PDF resume from structured JSON data
-        return self.resume_generator.generate_pdf(resume_json, f"{user_name}_{title}_resume.pdf")
+        return self.resume_generator.create_pdf(resume_json)
+    
+    def chat_with_ai(self, question):
+        # Placeholder for chat functionality
+        return self.resume_updater.answer_question(question)
