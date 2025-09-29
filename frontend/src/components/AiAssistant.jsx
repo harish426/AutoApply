@@ -17,7 +17,11 @@ const AiAssistant = ({ closeAssistant }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
-
+  const userData = JSON.parse(localStorage.getItem("user"));
+  if (!userData) {
+    // Handle the case where userData is null (e.g., redirect to login)
+    console.error("User data not found. Please log in.");
+  }
   const handleAskQuestion = async (e) => {
     e.preventDefault();
     if (!question.trim()) return;
@@ -25,12 +29,17 @@ const AiAssistant = ({ closeAssistant }) => {
     setAnswer('');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/chat_bot', {
+      const response = await fetch('http://127.0.0.1:8000/api/chat_bot/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ 
+          
+          user_email: userData?.email,
+          question: question 
+        }),
+          
       });
 
       if (response.ok) {
@@ -49,53 +58,49 @@ const AiAssistant = ({ closeAssistant }) => {
   };
 
 
-  const handleGenerateResume = async () => {
-    setIsGenerating(true);
+const handleGenerateResume = async () => {
+  setIsGenerating(true);
 
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/chat_bot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                companyName,
-                jobTitle,
-                jobDescription,
-                jobRequirements,
-            }),
-        });
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/updateResume/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_email: "test1@gmail.com",
+        user_name: userData?.name,
+        company_name: companyName,
+        job_title: jobTitle,
+        job_description: jobDescription,
+        job_requirements: jobRequirements,
+      }),
+    });
 
-        if (response.ok) {
-            console.log("Successfully sent resume data for optimization");
-        } else {
-            console.error("Failed to send resume data for optimization");
-        }
-    } catch (error) {
-        console.error("Error optimizing resume:", error);
+    if (!response.ok) {
+      console.error("Failed to generate resume");
+      setIsGenerating(false);
+      return;
     }
 
-    const input = resumePreviewRef.current;
-    html2canvas(input, { scale: 2 })
-      .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        const width = pdfWidth;
-        const height = width / ratio;
+    // ✅ Get PDF buffer as blob
+    const pdfBlob = await response.blob();
+    const pdfObjectURL = URL.createObjectURL(pdfBlob);
 
-        pdf.addImage(imgData, 'PNG', 0, 0, width, height > pdfHeight ? pdfHeight : height);
-        const pdfBlob = pdf.output('blob');
-        const pdfObjectURL = URL.createObjectURL(pdfBlob);
+    // ✅ If you want to open PDF in new tab:
+    window.open(pdfObjectURL, "_blank");
 
-        setPdfUrl(pdfObjectURL);
-        setIsGenerating(false);
-      });
-  };
+    // ✅ Or if you want to store it for preview/download button:
+    setPdfUrl(pdfObjectURL);
+
+    console.log("Resume generated successfully");
+  } catch (error) {
+    console.error("Error generating resume:", error);
+  } finally {
+    setIsGenerating(false);
+  }
+};
+
 
   const downloadPdf = () => {
       const link = document.createElement('a');

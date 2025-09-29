@@ -80,9 +80,9 @@ class ResumePDF(FPDF):
 # --- Resume Generation Class ---
 class ResumeGenerator:
     """A class to handle loading JSON and generating a PDF resume."""
-    
-    def __init__(self, json_data):
-        self.data = json_data
+
+    def __init__(self):
+        self.data = None
         self.font_name = 'Times'
 
     def _render_contact_info(self, pdf):
@@ -154,7 +154,7 @@ class ResumeGenerator:
                     pdf.set_font(self.font_name, "", 10)
                     pdf.write(5, f"{pdf.sanitize_text(', '.join(items))} | ", link='')
 
-            pdf.ln(7)
+            pdf.ln()
 
     def _render_additional_info(self, pdf):
         certifications = self.data.get("certifications", [])
@@ -177,13 +177,15 @@ class ResumeGenerator:
                 pdf.multi_cell(0, 5, pdf.sanitize_text(", ".join(publications)), 0, "L")
                 pdf.ln(2)
 
-    def create_pdf(self):
+    def create_pdf(self, json_data):
         """
         Public method to generate the PDF resume and return it as an io.BytesIO buffer.
         
         Returns:
             io.BytesIO: An in-memory buffer containing the PDF file data.
         """
+        self.data = json_data
+        print(json_data)
         pdf = ResumePDF("P", "mm", "A4")
         pdf.add_page()
         
@@ -203,7 +205,7 @@ class ResumeGenerator:
         
         # Reset buffer pointer to the beginning (important for reading/streaming)
         pdf_buffer.seek(0)
-        
+        print("PDF generation complete, returning io.BytesIO buffer.")
         return pdf_buffer
 
 
@@ -366,10 +368,10 @@ if __name__ == "__main__":
     }
     
     # --- DEMONSTRATION OF USAGE ---
-    generator = ResumeGenerator(json_data)
+    generator = ResumeGenerator()
     
     try:
-        pdf_buffer = generator.create_pdf()
+        pdf_buffer = generator.create_pdf(json_data)
         
         print("✅ PDF successfully generated into an io.BytesIO buffer.")
         print(f"Buffer type: {type(pdf_buffer)}")

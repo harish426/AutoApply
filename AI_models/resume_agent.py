@@ -7,7 +7,7 @@ from azure.identity import DefaultAzureCredential
 import os
 from Database_Handler.database_link import database
 import dotenv
-dotenv.load_dotenv()
+dotenv.load_dotenv(dotenv_path="D:/AutoApply0.3/AutoApply/AI_models/env")
 
 class ResumeAIUpdater:
     def __init__(self, connection_string=os.environ.get("Updating_Connection_String"), agent_id=os.environ.get("Updating_Agent_ID")):
@@ -210,7 +210,7 @@ class ResumeAIUpdater:
           content=instruction + f"{json_input_content}"
       )
 
-      print("Sending message to agent and processing run...")
+      print("Sending message to agent and processing run... in update_resume_with_ai")
       run = self.project_client.agents.create_and_process_run(
           thread_id=thread.id,
           agent_id=self.agent.id
@@ -244,12 +244,69 @@ class ResumeAIUpdater:
       if updated_resume is None:
          raise ValueError("No valid updated resume data received from the AI agent.")
       else:
-          print("Updated resume received from AI agent:")
-
-          print(updated_resume)   
+          print("Updated resume received from AI agent:") 
           return updated_resume
 
-    
+    def answer_question(self, question):
+        """
+        Answers a question based on the provided JSON information using an Azure AI agent.
+
+        Args:
+            json_info (str): JSON string containing relevant information.
+            question (str): The question to be answered.
+
+        Returns:
+            str: The answer provided by the AI agent, or None if an error occurs.
+        """
+        # try:
+        #     # info = json.loads(json_info)
+        # except json.JSONDecodeError as e:
+        #     print(f"Error decoding input JSON: {e}")
+        #     return None
+
+        input_data = {
+            # "information": info,
+            "question": question
+        }
+
+        json_input_content = json.dumps(input_data, indent=2)
+
+        thread = self.project_client.agents.create_thread()
+        self.project_client.agents.create_message(
+            thread_id=thread.id,
+            role="user",
+            content=(
+                "Based on the following information, please answer the question. "
+                "Provide a concise and accurate response. Do not include any explanations or additional text.\n\n"
+                f"{json_input_content}"
+            )
+        )
+
+        print("Sending message to agent and processing run... in answer_question")
+        run = self.project_client.agents.create_and_process_run(
+            thread_id=thread.id,
+            agent_id=self.agent.id
+        )
+        print("Run completed. Retrieving messages...")
+
+        messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
+        answer = None
+        if not messages_list_response.data:
+            print("No messages found in the thread after run completion.")
+        else:
+            for message_obj in messages_list_response.data:
+                message_role = getattr(message_obj, 'role', 'unknown_role_from_message_obj')
+                message_content = ""
+                if hasattr(message_obj, 'content') and message_obj.content:
+                    for content_part in message_obj.content:
+                        if getattr(content_part, 'type', None) == 'text':
+                            text_value_dict = getattr(content_part, 'text', {})
+                            message_content = getattr(text_value_dict, 'value', '')
+                            break
+                if message_role == 'assistant':
+                    answer = message_content
+
+        return answer
 
 json_data = """
 {
