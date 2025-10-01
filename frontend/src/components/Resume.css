@@ -9,12 +9,14 @@
     background-color: #ffffff;
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease-in-out;
 }
 
 .resume-section.card:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
@@ -74,7 +76,8 @@ textarea {
     grid-column: 1 / -1;
 }
 
-.array-item, .array-item-single {
+.array-item,
+.array-item-single {
     background-color: #f9fafb;
     padding: 20px;
     border-radius: 8px;
@@ -97,7 +100,9 @@ textarea {
     grid-column: 1 / -1;
 }
 
-.add-btn, .remove-btn, .remove-btn-single {
+.add-btn,
+.remove-btn,
+.remove-btn-single {
     border: none;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -116,15 +121,16 @@ textarea {
     background-color: #4f46e5;
 }
 
-.remove-btn, .remove-btn-single {
+.remove-btn,
+.remove-btn-single {
     background-color: #ef4444;
     color: white;
     padding: 10px 20px;
     justify-self: start; 
 }
 
-
-.remove-btn:hover, .remove-btn-single:hover {
+.remove-btn:hover,
+.remove-btn-single:hover {
     background-color: #dc2626;
 }
 
@@ -190,14 +196,16 @@ textarea {
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2), 0 6px 6px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2),
+                0 6px 6px rgba(99, 102, 241, 0.25);
     transition: all 0.3s ease-in-out;
     z-index: 10;
 }
 
 .edit-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 14px 28px rgba(99, 102, 241, 0.25), 0 10px 10px rgba(99, 102, 241, 0.22);
+    box-shadow: 0 14px 28px rgba(99, 102, 241, 0.25),
+                0 10px 10px rgba(99, 102, 241, 0.22);
 }
 
 .edit-button:active {
@@ -222,4 +230,45 @@ textarea {
 .download-button:hover {
     background-color: #16a34a;
     transform: translateY(-2px);
+}
+
+/* ✅ NEW: Placeholder styling */
+.placeholder {
+    color: #9ca3af;       /* gray-400 */
+    font-style: italic;
+    font-weight: 400;
+    opacity: 0.8;
+    display: inline-block;
+}
+
+.resume-section.card .placeholder {
+    padding: 4px 0;
+}
+
+/* ✅ NEW: Remove hover highlight for empty cards */
+.resume-section.card:has(.placeholder) {
+    box-shadow: none;
+    background-color: #fafafa;
+}
+
+.resume-section.card:has(.placeholder):hover {
+    box-shadow: none;
+    cursor: default;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;  /* this puts it in the top-right corner */
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ef4444;  /* red for visibility */
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.close-btn:hover {
+  color: #dc2626;
 }

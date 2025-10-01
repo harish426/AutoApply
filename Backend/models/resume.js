@@ -5,6 +5,7 @@ const resumeSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      unique: true,
       required: true, // every resume must be linked to a user
     },
     contact_info: {
@@ -49,7 +50,12 @@ const resumeSchema = new mongoose.Schema(
 
     certifications: [String], // e.g. ["React Nanodegree"]
 
-    publications: [String], // new field added
+    publications: [
+      {
+        name: { type: String, required: true },
+        link: { type: String },
+      },
+    ], // new field added
   },
   { timestamps: true }
 );

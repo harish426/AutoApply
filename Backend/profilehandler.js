@@ -139,17 +139,17 @@ async function handleSaveResume(req, res) {
     const data = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    let resume = await Resume.findOne({ user: user._id });
-
-    if (resume) {
-      Object.assign(resume, data); // edit/update
-    } else {
-      resume = new Resume({ user: user._id, ...data }); // new save
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    await resume.save();
+    // findOneAndUpdate ensures single document per user
+    const resume = await Resume.findOneAndUpdate(
+      { user: user._id }, // query by user
+      { $set: data }, // update with new data
+      { new: true, upsert: true } // return updated doc, create if missing
+    );
+
     res.status(200).json({ message: "Resume saved successfully", resume });
   } catch (err) {
     console.error("Save resume error:", err);
