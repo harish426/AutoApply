@@ -76,7 +76,7 @@ const ResumeForm = ({ resumeData, onClose }) => {
     const skillToAdd = newSkill[category].trim();
     if (
       !skillToAdd ||
-      (formData.skills[category] &&
+      (formData.skills?.[category] &&
         formData.skills[category].includes(skillToAdd))
     ) {
       setNewSkill({ ...newSkill, [category]: "" });
@@ -105,7 +105,8 @@ const ResumeForm = ({ resumeData, onClose }) => {
       console.log("Resume saved successfully:", data);
       onClose(); // close modal
     } catch (err) {
-      alert("Error saving resume. Please try again.", err);
+      console.error("Error saving resume:", err);
+      alert(`Error saving resume. Please try again.\n${err.message || err}`);
     }
   };
 
@@ -395,38 +396,51 @@ const ResumeForm = ({ resumeData, onClose }) => {
 
           <div className="resume-section card">
             <h2>Skills</h2>
-            {Object.keys(formData.skills || {}).map((category) => (
-              <div key={category} className="skill-category-container">
-                <h3>{category}</h3>
-                <div className="skills-list">
-                  {formData.skills[category].map((skill, index) => (
-                    <div key={index} className="skill-tag">
-                      {skill}
-                      <button
-                        onClick={() => removeSkill(category, index)}
-                        className="remove-skill-btn"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ))}
+            {["Programming", "Tools", "Relevant_Courses"].map((category) => {
+              // Ensure category exists in formData.skills
+              const categorySkills = formData.skills?.[category] || [];
+
+              return (
+                <div key={category} className="skill-category-container">
+                  <h3>{category}</h3>
+
+                  {/* Existing Skills */}
+                  <div className="skills-list">
+                    {categorySkills.length > 0 ? (
+                      categorySkills.map((skill, index) => (
+                        <div key={index} className="skill-tag">
+                          {skill}
+                          <button
+                            onClick={() => removeSkill(category, index)}
+                            className="remove-skill-btn"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="empty-skill-message">No skills added</p>
+                    )}
+                  </div>
+
+                  {/* Add New Skill */}
+                  <div className="add-skill-input-group">
+                    <input
+                      type="text"
+                      placeholder={`Add a new ${category} skill`}
+                      value={newSkill[category] || ""}
+                      onChange={(e) => handleNewSkillChange(e, category)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handleAddNewSkill(category)
+                      }
+                    />
+                    <button onClick={() => handleAddNewSkill(category)}>
+                      Add
+                    </button>
+                  </div>
                 </div>
-                <div className="add-skill-input-group">
-                  <input
-                    type="text"
-                    placeholder="Add a new skill"
-                    value={newSkill[category]}
-                    onChange={(e) => handleNewSkillChange(e, category)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && handleAddNewSkill(category)
-                    }
-                  />
-                  <button onClick={() => handleAddNewSkill(category)}>
-                    Add
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="resume-section card">
@@ -489,41 +503,44 @@ const ResumeForm = ({ resumeData, onClose }) => {
               <h2>Certifications</h2>
               <button
                 className="add-btn"
-                onClick={() => addArrayItem("certifications", { name: "" })}
+                onClick={() =>
+                  addArrayItem("certifications", { name: "", id: Date.now() })
+                }
               >
                 Add
               </button>
             </div>
+
             {(!formData.certifications ||
               formData.certifications.length === 0) && (
               <p className="empty-section-message">
                 List any relevant certifications you have earned.
               </p>
             )}
-            {formData.certifications &&
-              formData.certifications.map((cert) => (
-                <div key={cert.id} className="array-item-single">
-                  <input
-                    type="text"
-                    value={cert.name}
-                    onChange={(e) =>
-                      handleFieldChange(
-                        "certifications",
-                        cert.id,
-                        "name",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Certification Name"
-                  />
-                  <button
-                    className="remove-btn-single"
-                    onClick={() => removeArrayItem("certifications", cert.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
+
+            {formData.certifications?.map((cert) => (
+              <div key={cert.id} className="array-item-single">
+                <input
+                  type="text"
+                  value={cert.name}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "certifications",
+                      cert.id,
+                      "name",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Certification Name"
+                />
+                <button
+                  className="remove-btn-single"
+                  onClick={() => removeArrayItem("certifications", cert.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
           </div>
 
           <div className="resume-section card">

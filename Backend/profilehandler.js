@@ -150,6 +150,8 @@ async function handleSaveResume(req, res) {
       { new: true, upsert: true } // return updated doc, create if missing
     );
 
+    console.log("Saved resume data", resume);
+
     res.status(200).json({ message: "Resume saved successfully", resume });
   } catch (err) {
     console.error("Save resume error:", err);

@@ -130,6 +130,7 @@ const Home = ({ user }) => {
             element={
               <Resume
                 resumeData={resumeData}
+                userEmail={user?.email}
                 onResumeChange={handleResumeChange}
               />
             }

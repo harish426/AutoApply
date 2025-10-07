@@ -71,7 +71,6 @@ export const getResume = async (userEmail) => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // "Authorization": `Bearer ${token}` if needed
       },
     });
 
@@ -79,8 +78,11 @@ export const getResume = async (userEmail) => {
       const errorData = await res.json();
       throw new Error(errorData.message || "Failed to fetch resume");
     }
-    console.log("Respones data", res.json);
-    return await res.json();
+
+    const data = await res.json();
+
+    // ✅ Unwrap 'resume' before returning
+    return data.resume;
   } catch (err) {
     console.error("API Error:", err);
     throw err;
