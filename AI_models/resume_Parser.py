@@ -3,10 +3,10 @@ import re
 import os
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-from resume_pdf import ResumeBuilder  # Assuming this is the function to create PDF resumes
+
 import dotenv
 
-dotenv.load_dotenv()
+dotenv.load_dotenv(dotenv_path="D:/AutoApply0.3/AutoApply/AI_models/env")
 
 class ResumeAIParser:
     def __init__(self, connection_string=os.environ.get("Parser_Connection_String"), agent_id=os.environ.get("Parser_Agent_ID")):
@@ -53,7 +53,7 @@ class ResumeAIParser:
             )
         )
 
-        print("Sending message to agent and processing run...")
+        print("Sending message to agent and processing run... in parse_resume_with_ai")
         run = self.project_client.agents.create_and_process_run(
             thread_id=thread.id,
             agent_id=self.agent.id
@@ -61,8 +61,8 @@ class ResumeAIParser:
         print("Run completed. Retrieving messages...")
 
         messages_list_response = self.project_client.agents.list_messages(thread_id=thread.id)
-        print(messages_list_response.data)
-        updated_resume = None
+        
+     
         if not messages_list_response.data:
             print("No messages found in the thread after run completion.")
         else:
