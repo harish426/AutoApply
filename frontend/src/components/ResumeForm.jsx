@@ -504,7 +504,10 @@ const ResumeForm = ({ resumeData, onClose }) => {
               <button
                 className="add-btn"
                 onClick={() =>
-                  addArrayItem("certifications", { name: "", id: Date.now() })
+                  addArrayItem("certifications", {
+                    name: "",
+                    organization: "",
+                  })
                 }
               >
                 Add
@@ -519,7 +522,7 @@ const ResumeForm = ({ resumeData, onClose }) => {
             )}
 
             {formData.certifications?.map((cert) => (
-              <div key={cert.id} className="array-item-single">
+              <div key={cert.id} className="array-item-double">
                 <input
                   type="text"
                   value={cert.name}
@@ -531,10 +534,23 @@ const ResumeForm = ({ resumeData, onClose }) => {
                       e.target.value
                     )
                   }
-                  placeholder="Certification Name"
+                  placeholder="Certification Name (e.g., AWS Certified Developer)"
+                />
+                <input
+                  type="text"
+                  value={cert.organization}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "certifications",
+                      cert.id,
+                      "organization",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Issuing Organization (e.g., Amazon Web Services)"
                 />
                 <button
-                  className="remove-btn-single"
+                  className="remove-btn"
                   onClick={() => removeArrayItem("certifications", cert.id)}
                 >
                   Remove

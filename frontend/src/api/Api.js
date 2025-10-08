@@ -35,12 +35,12 @@ export const post = async (endpoint, data, token) => {
 
 export const saveResume = async (resumeData, email) => {
   try {
-    const payload = {
-      ...resumeData,
-      certifications: (resumeData.certifications || []).map((item) =>
-        typeof item === "string" ? item.trim() : String(item.name || "")
-      ),
-    };
+    // const payload = {
+    //   ...resumeData,
+    //   certifications: (resumeData.certifications || []).map((item) =>
+    //     typeof item === "string" ? item.trim() : String(item.name || "")
+    //   ),
+    // };
     const res = await fetch(`${apiUrl}/resume/${email}`, {
       method: "POST", // or PUT if updating
       headers: {
@@ -49,7 +49,7 @@ export const saveResume = async (resumeData, email) => {
         // "Authorization": `Bearer ${token}`
       },
 
-      body: JSON.stringify(payload),
+      body: JSON.stringify(resumeData),
     });
 
     if (!res.ok) {
@@ -83,6 +83,47 @@ export const getResume = async (userEmail) => {
 
     // ✅ Unwrap 'resume' before returning
     return data.resume;
+  } catch (err) {
+    console.error("API Error:", err);
+    throw err;
+  }
+};
+
+// api.js
+export const saveProfile = async (profileData) => {
+  try {
+    const res = await fetch(`${apiUrl}/profile/${profileData.email}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to save profile");
+    }
+
+    const data = await res.json();
+
+    return data;
+  } catch (err) {
+    console.error("API Error:", err);
+    throw err;
+  }
+};
+
+// ✅ Fetch profile by email
+export const getProfile = async (email) => {
+  try {
+    const res = await fetch(`${apiUrl}/profile/${email}`);
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to fetch profile");
+    }
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error("API Error:", err);
     throw err;

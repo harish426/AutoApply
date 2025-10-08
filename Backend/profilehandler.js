@@ -34,6 +34,7 @@ async function handleGetProfile(req, res) {
 
     const profile = await UserProfile.findOne({ user: user._id }).lean();
     if (!profile) return res.status(404).json({ error: "Profile not found" });
+    console.log("fetched profile data : ", profile);
 
     res.status(200).json({
       message: "Profile fetched successfully",
@@ -149,8 +150,6 @@ async function handleSaveResume(req, res) {
       { $set: data }, // update with new data
       { new: true, upsert: true } // return updated doc, create if missing
     );
-
-    console.log("Saved resume data", resume);
 
     res.status(200).json({ message: "Resume saved successfully", resume });
   } catch (err) {

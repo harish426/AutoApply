@@ -200,7 +200,11 @@ const Resume = ({ userEmail, onResumeChange }) => {
           resumeData.certifications,
           (item, idx) => (
             <div key={idx} className="certification-item">
-              <p>{item.name || item}</p>
+              <p>
+                {item.name} {/* Certification Name */}
+                {item.organization ? ` -  ${item.organization}` : ""}{" "}
+                {/* Organization if present */}
+              </p>
             </div>
           )
         )}

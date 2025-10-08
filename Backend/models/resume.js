@@ -48,7 +48,12 @@ const resumeSchema = new mongoose.Schema(
       },
     ],
 
-    certifications: [String], // e.g. ["React Nanodegree"]
+    certifications: [
+      {
+        name: { type: String },
+        organization: { type: String },
+      },
+    ],
 
     publications: [
       {

@@ -24,16 +24,36 @@ const userProfileSchema = new mongoose.Schema(
     },
 
     // Work Authorization
-    requireVisaSponsorship: { type: Boolean, default: false },
+    requireVisaSponsorship: {
+      type: String,
+      enum: ["Yes", "No"],
+      default: "No",
+    },
     presentVisaStatus: { type: String },
 
     // Demographics
-    disabilityStatus: { type: Boolean, default: false },
-    veteranStatus: { type: Boolean, default: false },
-    hispanicOrLatino: { type: Boolean, default: false },
+    disabilityStatus: {
+      type: String,
+      enum: ["Yes", "No"],
+      default: "No",
+    },
+    veteranStatus: {
+      type: String,
+      enum: ["Yes", "No"],
+      default: "No",
+    },
+    hispanicOrLatino: {
+      type: String,
+      enum: ["Yes", "No"],
+      default: "No",
+    },
 
     // Preferences
-    willingToRelocate: { type: Boolean, default: false },
+    willingToRelocate: {
+      type: String,
+      enum: ["Yes", "No"],
+      default: "No",
+    },
   },
   { timestamps: true }
 );
