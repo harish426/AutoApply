@@ -3,12 +3,34 @@ import "./Resume.css";
 import ResumeForm from "./ResumeForm";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { getResume } from "../api/api"; // ✅ import your API
+import { getResume } from "../api/api";
 
 const Resume = ({ userEmail, onResumeChange }) => {
   const [resumeData, setResumeData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Default resume structure for new users
+  const emptyResume = {
+    contact_info: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      countryCode: "+1",
+    },
+    summary: "",
+    experience: [],
+    education: [],
+    skills: {
+      Programming: [],
+      Tools: [],
+      Relevant_Courses: [],
+    },
+    projects: [],
+    certifications: [],
+    publications: [],
+  };
 
   // ✅ Fetch resume data from API when component mounts
   useEffect(() => {
@@ -17,10 +39,22 @@ const Resume = ({ userEmail, onResumeChange }) => {
     const fetchResume = async () => {
       try {
         const data = await getResume(userEmail);
-        setResumeData(data);
+        console.log("Fetched resume:", data);
+
+        // ✅ Apply fallback if data is empty or null
+        if (!data || Object.keys(data).length === 0) {
+          console.warn(
+            "⚠️ No existing resume found — creating default blank resume."
+          );
+          setResumeData(emptyResume);
+        } else {
+          setResumeData(data);
+        }
+
         onResumeChange?.(data);
       } catch (err) {
         console.error("Failed to fetch resume:", err);
+        setResumeData(emptyResume); // fallback on failure
       } finally {
         setLoading(false);
       }
@@ -34,7 +68,7 @@ const Resume = ({ userEmail, onResumeChange }) => {
     }
   }, [onResumeChange, userEmail]);
 
-  // Edit handlers
+  // Handlers
   const handleEdit = () => setIsEditing(true);
   const handleSave = (newResumeData) => {
     setResumeData(newResumeData);
@@ -43,7 +77,7 @@ const Resume = ({ userEmail, onResumeChange }) => {
   };
   const handleClose = () => setIsEditing(false);
 
-  // ✅ PDF download logic (unchanged)
+  // PDF download logic (unchanged)
   const downloadPdf = () => {
     const input = document.getElementById("resume-content");
     html2canvas(input, { scale: 2 }).then((canvas) => {
@@ -69,19 +103,7 @@ const Resume = ({ userEmail, onResumeChange }) => {
     });
   };
 
-  // Generic section renderer
-  const renderSection = (title, data, renderItem) => (
-    <div className="resume-section card">
-      <h2>{title}</h2>
-      {Array.isArray(data) && data.length > 0 ? (
-        data.map((item, idx) => renderItem(item, idx))
-      ) : (
-        <p className="placeholder">No {title.toLowerCase()} added yet.</p>
-      )}
-    </div>
-  );
-
-  // ✅ Show loading state until resume is fetched
+  // Loading state
   if (loading) {
     return <div className="loading-text">Loading resume...</div>;
   }
@@ -95,7 +117,7 @@ const Resume = ({ userEmail, onResumeChange }) => {
       {/* Editing Mode */}
       {isEditing && (
         <ResumeForm
-          resumeData={resumeData}
+          resumeData={resumeData || emptyResume} // ✅ ensures valid data structure
           onSave={handleSave}
           onClose={handleClose}
         />
@@ -170,7 +192,6 @@ const Resume = ({ userEmail, onResumeChange }) => {
                     {skill}
                   </span>
                 ))}
-                {/* Show placeholder if empty */}
                 {(!resumeData.skills?.[category] ||
                   resumeData.skills[category].length === 0) && (
                   <span className="placeholder">
@@ -201,9 +222,8 @@ const Resume = ({ userEmail, onResumeChange }) => {
           (item, idx) => (
             <div key={idx} className="certification-item">
               <p>
-                {item.name} {/* Certification Name */}
-                {item.organization ? ` -  ${item.organization}` : ""}{" "}
-                {/* Organization if present */}
+                {item.name}
+                {item.organization ? ` - ${item.organization}` : ""}
               </p>
             </div>
           )
@@ -230,6 +250,20 @@ const Resume = ({ userEmail, onResumeChange }) => {
       </button>
     </div>
   );
+
+  // Helper function at bottom
+  function renderSection(title, data, renderItem) {
+    return (
+      <div className="resume-section card">
+        <h2>{title}</h2>
+        {Array.isArray(data) && data.length > 0 ? (
+          data.map((item, idx) => renderItem(item, idx))
+        ) : (
+          <p className="placeholder">No {title.toLowerCase()} added yet.</p>
+        )}
+      </div>
+    );
+  }
 };
 
 export default Resume;

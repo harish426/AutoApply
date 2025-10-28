@@ -35,20 +35,11 @@ export const post = async (endpoint, data, token) => {
 
 export const saveResume = async (resumeData, email) => {
   try {
-    // const payload = {
-    //   ...resumeData,
-    //   certifications: (resumeData.certifications || []).map((item) =>
-    //     typeof item === "string" ? item.trim() : String(item.name || "")
-    //   ),
-    // };
     const res = await fetch(`${apiUrl}/resume/${email}`, {
-      method: "POST", // or PUT if updating
+      method: "POST", // Use PUT if updating existing resume
       headers: {
         "Content-Type": "application/json",
-        // Add auth if needed
-        // "Authorization": `Bearer ${token}`
       },
-
       body: JSON.stringify(resumeData),
     });
 
@@ -57,7 +48,7 @@ export const saveResume = async (resumeData, email) => {
       throw new Error(errorData.message || "Failed to save resume");
     }
 
-    return await res.json();
+    return await res.json(); // Return server response (e.g., success message)
   } catch (err) {
     console.error("API Error:", err);
     throw err;
@@ -80,9 +71,7 @@ export const getResume = async (userEmail) => {
     }
 
     const data = await res.json();
-
-    // ✅ Unwrap 'resume' before returning
-    return data.resume;
+    return data.resume; // ✅ Only return the resume field
   } catch (err) {
     console.error("API Error:", err);
     throw err;
